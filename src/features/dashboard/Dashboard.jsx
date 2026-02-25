@@ -1,6 +1,6 @@
 import React from "react";
 import Layout from "../../shared/components/layout/Layout";
-import { PlusCircle, FileText, CheckCircle, TrendingUp, Users, ArrowUpRight, Clock, Search, Loader2, Trash2, Sparkles, BarChart3, Mail, Eye, Activity } from "lucide-react";
+import { PlusCircle, FileText, CheckCircle, TrendingUp, Users, ArrowUpRight, Clock, Search, Loader2, Trash2, Sparkles, BarChart3, Mail, Eye, Activity, Copy } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { useQuizzes, useStats } from "../quiz/hooks/useQuizQueries";
 import { useDeleteQuiz } from "../quiz/hooks/useQuizMutations";
@@ -97,6 +97,12 @@ const Dashboard = () => {
       },
       onError: () => toast.error("Failed to delete quiz")
     });
+  };
+
+  const handleCopyId = (e, id) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(id);
+    toast.success("Quiz ID copied to clipboard!");
   };
 
   return (
@@ -409,6 +415,13 @@ const Dashboard = () => {
                       </td>
                       <td className="px-6 py-6 whitespace-nowrap text-right">
                         <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={(e) => handleCopyId(e, quiz._id)}
+                            className="w-9 h-9 flex items-center justify-center text-muted-foreground/40 hover:text-primary hover:bg-primary/5 rounded-xl transition-all border border-transparent hover:border-primary/10"
+                            title="Copy Quiz ID"
+                          >
+                            <Copy size={14} />
+                          </button>
                           <button
                             onClick={() => navigate(`/quiz/${quiz._id}/builder`)}
                             className="h-9 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest bg-primary/5 text-primary hover:bg-primary hover:text-white transition-all border border-primary/10 flex items-center gap-2 group/build"

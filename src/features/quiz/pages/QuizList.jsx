@@ -9,7 +9,8 @@ import {
    Sparkles,
    ArrowUpRight,
    Loader2,
-   Clock
+   Clock,
+   Copy
 } from 'lucide-react';
 import { useQuizzes } from '../hooks/useQuizQueries';
 import { useDeleteQuiz } from '../hooks/useQuizMutations';
@@ -48,6 +49,12 @@ const QuizList = () => {
             setQuizToDelete(null);
          }
       });
+   };
+
+   const handleCopyId = (e, id) => {
+      e.stopPropagation();
+      navigator.clipboard.writeText(id);
+      toast.success('Quiz ID copied to clipboard!');
    };
 
    const quizzes = data?.quizzes || [];
@@ -146,8 +153,18 @@ const QuizList = () => {
                                           {quiz.title.substring(0, 2).toUpperCase()}
                                        </div>
                                        <div>
-                                          <div className="text-base font-black text-foreground group-hover:text-primary transition-colors tracking-tight mb-0.5">{quiz.title}</div>
-                                          <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] opacity-60">Production Entity</div>
+                                          <div className="flex items-center gap-2">
+                                             <div className="text-base font-black text-foreground group-hover:text-primary transition-colors tracking-tight mb-0.5">{quiz.title}</div>
+                                             <button
+                                                onClick={(e) => handleCopyId(e, quiz._id)}
+                                                className="opacity-0 group-hover:opacity-40 hover:opacity-100 transition-opacity p-1 rounded-md hover:bg-primary/5 text-muted-foreground hover:text-primary"
+                                                title="Copy ID"
+                                             >
+                                                <Copy size={12} />
+                                             </button>
+                                          </div>
+
+                                          <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] opacity-60">ID: {quiz._id.substring(0, 8)}...</div>
                                        </div>
                                     </div>
                                  </td>
