@@ -176,7 +176,16 @@ const QuizList = () => {
                                     </span>
                                  </td>
                                  <td className="px-6 py-6 whitespace-nowrap text-[12px] text-muted-foreground font-mono font-bold tracking-tight opacity-70">
-                                    /quiz/{quiz.handle}
+                                    <a
+                                       href={`https://quizora-server-production-c5a9.up.railway.app/quiz/${quiz.handle}`}
+                                       target="_blank"
+                                       rel="noopener noreferrer"
+                                       className="hover:text-primary transition-colors flex items-center gap-1.5"
+                                       onClick={(e) => e.stopPropagation()}
+                                    >
+                                       /quiz/{quiz.handle}
+                                       <ArrowUpRight size={12} className="opacity-40" />
+                                    </a>
                                  </td>
                                  <td className="px-6 py-6 whitespace-nowrap text-[11px] font-bold text-muted-foreground uppercase tracking-widest">
                                     <div className="flex items-center gap-2">
