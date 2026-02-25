@@ -50,14 +50,14 @@ const ColorPicker = ({ label, value, onChange, description }) => {
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest ml-1">
-          {label}
-        </label>
-        {description && (
-          <span className="text-[9px] text-muted-foreground/50 italic">{description}</span>
-        )}
-      </div>
+        <div className="flex items-center justify-between">
+          <label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest ml-1">
+            {label}
+          </label>
+          {description && (
+            <span className="text-[9px] text-muted-foreground/50 italic">{description}</span>
+          )}
+        </div>
 
       <div className="relative" ref={pickerRef}>
         {/* Color Display Button */}

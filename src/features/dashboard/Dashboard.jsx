@@ -8,6 +8,7 @@ import { analyticsApi } from "../quiz/api/analyticsApi";
 import { formatDistanceToNow } from 'date-fns';
 import toast from "react-hot-toast";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import ConfirmModal from "../../shared/components/ui/ConfirmModal";
 
 /* ─── STAT CARD ─── */
 const StatsCard = ({ title, value, icon: Icon, trend, isPositive, color, bg }) => (
@@ -15,7 +16,7 @@ const StatsCard = ({ title, value, icon: Icon, trend, isPositive, color, bg }) =
     <div className={`absolute top-0 right-0 p-4 opacity-[0.03] pointer-events-none transform scale-150 -translate-y-2 translate-x-2 group-hover:scale-[1.7] transition-transform duration-500`}>
       <Icon size={120} />
     </div>
-    
+
     <div className="relative z-10 flex items-start justify-between">
       <div>
         <p className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">{title}</p>
@@ -25,7 +26,7 @@ const StatsCard = ({ title, value, icon: Icon, trend, isPositive, color, bg }) =
         <Icon size={24} />
       </div>
     </div>
-    
+
     <div className="relative z-10 mt-5 flex items-center text-xs font-semibold">
       <span className={`${isPositive ? 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20' : 'text-rose-500 bg-rose-500/10 border-rose-500/20'} px-2 py-1 rounded-lg border flex items-center mr-2 transition-colors`}>
         <TrendingUp size={12} className={`mr-1 ${!isPositive && 'rotate-180'}`} />
@@ -111,61 +112,61 @@ const Dashboard = () => {
               Welcome back, <span className="text-primary font-black">Admin</span>. Here is your platform overview.
             </p>
           </div>
-          
+
           <div className="flex items-center gap-4 w-full md:w-auto">
-              <div className="relative flex-1 md:flex-none">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/50" size={18} />
-                  <input 
-                      type="text" 
-                      placeholder="Search Quizzes..." 
-                      className="pl-12 pr-6 h-[56px] rounded-2xl bg-card border border-border/50 focus:ring-4 focus:ring-primary/5 focus:border-primary/30 transition-all w-full md:w-72 text-sm font-bold shadow-sm"
-                  />
-              </div>
-              
-              <Link to="/quiz/create" className="btn-premium glow-primary h-[56px] px-8 border border-primary/20 bg-primary text-white flex items-center gap-2 hover:scale-[1.02] transition-all rounded-2xl font-black uppercase tracking-widest text-[10px]">
-                  <PlusCircle size={20} />
-                  Create Quiz
-              </Link>
+            <div className="relative flex-1 md:flex-none">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/50" size={18} />
+              <input
+                type="text"
+                placeholder="Search Quizzes..."
+                className="pl-12 pr-6 h-[56px] rounded-2xl bg-card border border-border/50 focus:ring-4 focus:ring-primary/5 focus:border-primary/30 transition-all w-full md:w-72 text-sm font-bold shadow-sm"
+              />
+            </div>
+
+            <Link to="/quiz/create" className="btn-premium glow-primary h-[56px] px-8 border border-primary/20 bg-primary text-white flex items-center gap-2 hover:scale-[1.02] transition-all rounded-2xl font-black uppercase tracking-widest text-[10px]">
+              <PlusCircle size={20} />
+              Create Quiz
+            </Link>
           </div>
         </div>
 
         {/* 2. STATS GRID */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mb-8 animate-reveal">
-          <StatsCard 
-              title="Total Quizzes" 
-              value={stats?.totalQuizzes || 0} 
-              icon={FileText} 
-              trend={stats?.trends?.quizzes || "+0 this week"} 
-              isPositive={true}
-              color="text-primary" 
-              bg="bg-primary/5" 
+          <StatsCard
+            title="Total Quizzes"
+            value={stats?.totalQuizzes || 0}
+            icon={FileText}
+            trend={stats?.trends?.quizzes || "+0 this week"}
+            isPositive={true}
+            color="text-primary"
+            bg="bg-primary/5"
           />
-          <StatsCard 
-              title="Total Leads" 
-              value={stats?.totalLeads || 0} 
-              icon={Users} 
-              trend={stats?.trends?.leads || "+0 today"} 
-              isPositive={true}
-              color="text-indigo-500" 
-              bg="bg-indigo-500/5" 
+          <StatsCard
+            title="Total Leads"
+            value={stats?.totalLeads || 0}
+            icon={Users}
+            trend={stats?.trends?.leads || "+0 today"}
+            isPositive={true}
+            color="text-indigo-500"
+            bg="bg-indigo-500/5"
           />
-          <StatsCard 
-              title="Total Sessions" 
-              value={stats?.totalSessions || 0} 
-              icon={CheckCircle} 
-              trend={stats?.trends?.sessions || "+0 organic"} 
-              isPositive={true}
-              color="text-emerald-500" 
-              bg="bg-emerald-500/5" 
+          <StatsCard
+            title="Total Sessions"
+            value={stats?.totalSessions || 0}
+            icon={CheckCircle}
+            trend={stats?.trends?.sessions || "+0 organic"}
+            isPositive={true}
+            color="text-emerald-500"
+            bg="bg-emerald-500/5"
           />
-          <StatsCard 
-              title="Conversion" 
-              value={stats?.conversionRate || "0%"} 
-              icon={TrendingUp} 
-              trend={stats?.trends?.conversion || "0% growth"} 
-              isPositive={true}
-              color="text-rose-500" 
-              bg="bg-rose-500/5" 
+          <StatsCard
+            title="Conversion"
+            value={stats?.conversionRate || "0%"}
+            icon={TrendingUp}
+            trend={stats?.trends?.conversion || "0% growth"}
+            isPositive={true}
+            color="text-rose-500"
+            bg="bg-rose-500/5"
           />
         </div>
 
@@ -185,7 +186,7 @@ const Dashboard = () => {
               </div>
               <span className="text-[9px] font-bold text-muted-foreground bg-muted px-2.5 py-1 rounded-lg uppercase tracking-widest border border-border/50">All time</span>
             </div>
-            
+
             <div className="h-[200px]">
               {analyticsLoading ? (
                 <div className="h-full flex items-center justify-center"><Loader2 className="animate-spin text-muted-foreground" size={24} /></div>
@@ -193,7 +194,7 @@ const Dashboard = () => {
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={funnelData} layout="vertical" margin={{ top: 0, right: 10, left: 5, bottom: 0 }} barSize={20}>
                     <XAxis type="number" hide />
-                    <YAxis 
+                    <YAxis
                       dataKey="name" type="category" width={80}
                       tick={{ fontSize: 10, fontWeight: 700, fill: '#94a3b8' }}
                       axisLine={false} tickLine={false}
@@ -227,18 +228,17 @@ const Dashboard = () => {
               </div>
               <span className="text-[9px] font-bold text-indigo-500 bg-indigo-500/5 px-2.5 py-1 rounded-lg border border-indigo-500/10 uppercase tracking-widest">{recentLeads.length} new</span>
             </div>
-            
+
             {analyticsLoading ? (
               <div className="h-[200px] flex items-center justify-center"><Loader2 className="animate-spin text-muted-foreground" size={24} /></div>
             ) : recentLeads.length > 0 ? (
               <div className="space-y-2">
                 {recentLeads.map((lead, idx) => (
                   <div key={lead._id} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-muted/50 transition-colors group">
-                    <div className={`w-9 h-9 rounded-full flex items-center justify-center text-white text-[10px] font-black shrink-0 bg-gradient-to-br ${
-                      idx % 3 === 0 ? 'from-indigo-500 to-violet-600' :
+                    <div className={`w-9 h-9 rounded-full flex items-center justify-center text-white text-[10px] font-black shrink-0 bg-gradient-to-br ${idx % 3 === 0 ? 'from-indigo-500 to-violet-600' :
                       idx % 3 === 1 ? 'from-emerald-500 to-teal-600' :
-                      'from-amber-500 to-orange-600'
-                    }`}>
+                        'from-amber-500 to-orange-600'
+                      }`}>
                       {lead.firstName?.[0] || 'U'}{lead.lastName?.[0] || ''}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -276,23 +276,22 @@ const Dashboard = () => {
                 </div>
               </div>
             </div>
-            
+
             {analyticsLoading ? (
               <div className="h-[200px] flex items-center justify-center"><Loader2 className="animate-spin text-muted-foreground" size={24} /></div>
             ) : quizPerformance.length > 0 ? (
               <div className="space-y-2.5">
                 {quizPerformance.slice(0, 4).map((quiz, idx) => (
-                  <div 
-                    key={quiz._id} 
+                  <div
+                    key={quiz._id}
                     onClick={() => navigate(`/quiz/${quiz._id}/builder`)}
                     className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-muted/50 transition-colors cursor-pointer group"
                   >
-                    <span className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black text-white shrink-0 ${
-                      idx === 0 ? 'bg-gradient-to-br from-amber-400 to-amber-600' :
+                    <span className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black text-white shrink-0 ${idx === 0 ? 'bg-gradient-to-br from-amber-400 to-amber-600' :
                       idx === 1 ? 'bg-gradient-to-br from-slate-300 to-slate-500' :
-                      idx === 2 ? 'bg-gradient-to-br from-amber-600 to-amber-800' :
-                      'bg-slate-200 text-slate-500'
-                    }`}>
+                        idx === 2 ? 'bg-gradient-to-br from-amber-600 to-amber-800' :
+                          'bg-slate-200 text-slate-500'
+                      }`}>
                       {idx + 1}
                     </span>
                     <div className="flex-1 min-w-0">
@@ -324,18 +323,18 @@ const Dashboard = () => {
           <div className="p-10 border-b border-border/10 flex justify-between items-center bg-card/40 backdrop-blur-3xl">
             <div className="flex items-center gap-5">
               <div className="w-14 h-14 rounded-2xl bg-muted/50 flex items-center justify-center text-muted-foreground/30 border border-border/50">
-                  <Clock size={24} />
+                <Clock size={24} />
               </div>
               <div>
-                  <h2 className="text-2xl font-black text-foreground tracking-tight">Recent Activity</h2>
-                  <p className="text-sm text-muted-foreground mt-0.5 font-medium">Real-time status of your recommendation engines</p>
+                <h2 className="text-2xl font-black text-foreground tracking-tight">Recent Activity</h2>
+                <p className="text-sm text-muted-foreground mt-0.5 font-medium">Real-time status of your recommendation engines</p>
               </div>
             </div>
             <button className="h-12 px-6 rounded-xl text-[11px] font-black text-primary hover:bg-primary/5 flex items-center gap-2 uppercase tracking-[0.2em] transition-all group border border-transparent hover:border-primary/10">
               View Archive <ArrowUpRight size={16} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
             </button>
           </div>
-          
+
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
@@ -349,89 +348,89 @@ const Dashboard = () => {
               </thead>
               <tbody className="divide-y divide-border/5">
                 {isQuizzesLoading ? (
-                    <tr>
-                        <td colSpan="5" className="px-10 py-32 text-center">
-                            <div className="flex flex-col items-center justify-center gap-6">
-                                <Loader2 className="animate-spin text-primary" size={40} />
-                                <span className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground animate-pulse">Synchronizing Data...</span>
-                            </div>
-                        </td>
-                    </tr>
+                  <tr>
+                    <td colSpan="5" className="px-10 py-32 text-center">
+                      <div className="flex flex-col items-center justify-center gap-6">
+                        <Loader2 className="animate-spin text-primary" size={40} />
+                        <span className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground animate-pulse">Synchronizing Data...</span>
+                      </div>
+                    </td>
+                  </tr>
                 ) : quizzesData?.quizzes?.length === 0 ? (
-                    <tr>
-                        <td colSpan="5" className="px-10 py-32 text-center">
-                            <div className="flex flex-col items-center justify-center gap-4 opacity-40">
-                                <FileText size={48} className="text-muted-foreground" />
-                                <p className="text-muted-foreground font-medium italic text-lg">The registry is currently empty.</p>
-                                <Link to="/quiz/create" className="text-primary text-xs font-black uppercase tracking-widest mt-2 hover:underline">Launch your first quiz</Link>
-                            </div>
-                        </td>
-                    </tr>
+                  <tr>
+                    <td colSpan="5" className="px-10 py-32 text-center">
+                      <div className="flex flex-col items-center justify-center gap-4 opacity-40">
+                        <FileText size={48} className="text-muted-foreground" />
+                        <p className="text-muted-foreground font-medium italic text-lg">The registry is currently empty.</p>
+                        <Link to="/quiz/create" className="text-primary text-xs font-black uppercase tracking-widest mt-2 hover:underline">Launch your first quiz</Link>
+                      </div>
+                    </td>
+                  </tr>
                 ) : (
-                    quizzesData?.quizzes?.map((quiz, i) => (
-                      <tr key={quiz._id} className="group hover:bg-primary/[0.02] transition-all cursor-pointer">
-                        <td className="px-6 py-6 whitespace-nowrap" onClick={() => navigate(`/quiz/${quiz._id}/builder`)}>
-                          <div className="flex items-center gap-4">
-                            <div className={`h-12 w-12 rounded-2xl flex items-center justify-center text-white font-black text-[12px] shadow-2xl transition-transform group-hover:scale-110 duration-500
-                              ${i % 3 === 0 ? 'bg-gradient-to-br from-indigo-500 to-violet-600 shadow-indigo-500/10' : 
-                                i % 3 === 1 ? 'bg-gradient-to-br from-rose-500 to-pink-600 shadow-rose-500/10' : 
+                  quizzesData?.quizzes?.map((quiz, i) => (
+                    <tr key={quiz._id} className="group hover:bg-primary/[0.02] transition-all cursor-pointer">
+                      <td className="px-6 py-6 whitespace-nowrap" onClick={() => navigate(`/quiz/${quiz._id}/builder`)}>
+                        <div className="flex items-center gap-4">
+                          <div className={`h-12 w-12 rounded-2xl flex items-center justify-center text-white font-black text-[12px] shadow-2xl transition-transform group-hover:scale-110 duration-500
+                              ${i % 3 === 0 ? 'bg-gradient-to-br from-indigo-500 to-violet-600 shadow-indigo-500/10' :
+                              i % 3 === 1 ? 'bg-gradient-to-br from-rose-500 to-pink-600 shadow-rose-500/10' :
                                 'bg-gradient-to-br from-cyan-500 to-blue-600 shadow-cyan-500/10'}`
-                            }>
-                              {quiz.title.substring(0, 2).toUpperCase()}
-                            </div>
-                            <div>
-                              <div className="text-sm font-black text-foreground group-hover:text-primary transition-colors tracking-tight mb-0.5">{quiz.title}</div>
-                              <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Production Entity</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-6 whitespace-nowrap" onClick={() => navigate(`/quiz/${quiz._id}/builder`)}>
-                          <span className={`px-3 py-1 inline-flex text-[9px] font-black uppercase tracking-widest rounded-full border
-                            ${quiz.status === 'draft' ? 'bg-yellow-500/5 text-yellow-600 border-yellow-500/10' : 'bg-emerald-500/5 text-emerald-600 border-emerald-500/10'}`
                           }>
-                            {quiz.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-6 whitespace-nowrap text-[11px] text-muted-foreground font-mono font-bold tracking-tight opacity-70">
-                          <a 
-                              href={`/quiz/${quiz.handle}`} 
-                              target="_blank" 
-                              rel="noopener noreferrer" 
-                              className="hover:text-primary transition-colors flex items-center gap-1.5"
-                              onClick={(e) => e.stopPropagation()}
-                          >
-                              /quiz/{quiz.handle}
-                              <ArrowUpRight size={12} className="opacity-40" />
-                          </a>
-                        </td>
-                        <td className="px-6 py-6 whitespace-nowrap text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center">
-                          <Clock size={12} className="mr-2 opacity-40" />
-                          {quiz.createdAt ? formatDistanceToNow(new Date(quiz.createdAt), { addSuffix: true }) : 'Just now'}
-                        </td>
-                        <td className="px-6 py-6 whitespace-nowrap text-right">
-                          <div className="flex items-center justify-end gap-2">
-                              <button 
-                                  onClick={() => navigate(`/quiz/${quiz._id}/builder`)}
-                                  className="h-9 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest bg-primary/5 text-primary hover:bg-primary hover:text-white transition-all border border-primary/10 flex items-center gap-2 group/build"
-                              >
-                                  <Sparkles size={13} className="group-hover/build:scale-125 transition-transform" />
-                                  Build
-                              </button>
-                              <button 
-                                  onClick={() => handleDelete(quiz._id, quiz.title)}
-                                  className="w-9 h-9 flex items-center justify-center text-rose-500/40 hover:text-rose-500 hover:bg-rose-500/5 rounded-xl transition-all border border-transparent hover:border-rose-500/10"
-                                  title="Delete Quiz"
-                              >
-                                  <Trash2 size={16} />
-                              </button>
+                            {quiz.title.substring(0, 2).toUpperCase()}
                           </div>
-                        </td>
-                      </tr>
-                    ))
+                          <div>
+                            <div className="text-sm font-black text-foreground group-hover:text-primary transition-colors tracking-tight mb-0.5">{quiz.title}</div>
+                            <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Production Entity</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-6 whitespace-nowrap" onClick={() => navigate(`/quiz/${quiz._id}/builder`)}>
+                        <span className={`px-3 py-1 inline-flex text-[9px] font-black uppercase tracking-widest rounded-full border
+                            ${quiz.status === 'draft' ? 'bg-yellow-500/5 text-yellow-600 border-yellow-500/10' : 'bg-emerald-500/5 text-emerald-600 border-emerald-500/10'}`
+                        }>
+                          {quiz.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-6 whitespace-nowrap text-[11px] text-muted-foreground font-mono font-bold tracking-tight opacity-70">
+                        <a
+                          href={`/quiz/${quiz.handle}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:text-primary transition-colors flex items-center gap-1.5"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          /quiz/{quiz.handle}
+                          <ArrowUpRight size={12} className="opacity-40" />
+                        </a>
+                      </td>
+                      <td className="px-6 py-6 whitespace-nowrap text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center">
+                        <Clock size={12} className="mr-2 opacity-40" />
+                        {quiz.createdAt ? formatDistanceToNow(new Date(quiz.createdAt), { addSuffix: true }) : 'Just now'}
+                      </td>
+                      <td className="px-6 py-6 whitespace-nowrap text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => navigate(`/quiz/${quiz._id}/builder`)}
+                            className="h-9 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest bg-primary/5 text-primary hover:bg-primary hover:text-white transition-all border border-primary/10 flex items-center gap-2 group/build"
+                          >
+                            <Sparkles size={13} className="group-hover/build:scale-125 transition-transform" />
+                            Build
+                          </button>
+                          <button
+                            onClick={() => handleDelete(quiz._id, quiz.title)}
+                            className="w-9 h-9 flex items-center justify-center text-rose-500/40 hover:text-rose-500 hover:bg-rose-500/5 rounded-xl transition-all border border-transparent hover:border-rose-500/10"
+                            title="Delete Quiz"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
                 )}
               </tbody>
             </table>
-            
+
             {/* PAGINATION CONTROLS */}
             {!isQuizzesLoading && quizzesData?.pages > 1 && (
               <div className="px-6 py-4 border-t border-border/10 flex items-center justify-between bg-muted/5">
@@ -460,40 +459,16 @@ const Dashboard = () => {
         </div>
       </Layout>
 
-      {/* 5. MODAL: DELETE CONFIRMATION */}
-      {confirmModal.isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/40 backdrop-blur-md animate-in fade-in duration-300">
-           <div className="max-w-md w-full bg-card border border-border shadow-2xl rounded-[40px] p-10 animate-reveal">
-              <div className="flex flex-col items-center text-center gap-6">
-                <div className="w-20 h-20 rounded-3xl bg-rose-500/10 flex items-center justify-center text-rose-500 shadow-inner">
-                  <Trash2 size={36} />
-                </div>
-                <div>
-                  <h3 className="text-2xl font-black text-foreground tracking-tight">Delete Quiz?</h3>
-                  <p className="text-muted-foreground mt-2 font-medium">
-                    You are about to remove <span className="text-foreground font-extrabold italic">"{confirmModal.name}"</span>. 
-                    This will permanently delete all associated questions and data.
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex flex-col gap-3 mt-10">
-                <button 
-                  onClick={confirmDelete}
-                  className="h-14 bg-rose-500 hover:bg-rose-600 text-white font-black text-xs uppercase tracking-[0.2em] rounded-2xl transition-all shadow-xl shadow-rose-500/20 active:scale-95 flex items-center justify-center gap-2"
-                >
-                  Confirm Removal
-                </button>
-                <button 
-                  onClick={() => setConfirmModal({ isOpen: false, id: null, name: '' })}
-                  className="h-14 bg-muted hover:bg-muted/80 text-foreground font-black text-xs uppercase tracking-[0.2em] rounded-2xl transition-all active:scale-95"
-                >
-                  Keep Quiz
-                </button>
-              </div>
-           </div>
-        </div>
-      )}
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ isOpen: false, id: null, name: '' })}
+        onConfirm={confirmDelete}
+        title="Delete Quiz?"
+        message={`You are about to remove "${confirmModal.name}". This will permanently delete all associated questions and data.`}
+        confirmText="Confirm Removal"
+        cancelText="Keep Quiz"
+        type="danger"
+      />
     </>
   );
 };
