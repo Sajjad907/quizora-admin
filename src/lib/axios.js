@@ -38,7 +38,8 @@ apiClient.interceptors.response.use(
     const message = error.response?.data?.message || 'Something went wrong';
     
     // 1. If error is 401 and we haven't tried refreshing yet
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // IMPORTANT: Don't retry if the request itself was the refresh call
+    if (error.response?.status === 401 && !originalRequest._retry && !originalRequest.url.includes('/auth/refresh')) {
       originalRequest._retry = true;
       
       try {
@@ -52,7 +53,9 @@ apiClient.interceptors.response.use(
       } catch (refreshError) {
         console.error('[Axios] Refresh failed, redirecting to login');
         // If refresh fails, user must log in again
-        window.location.href = '/login';
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
         return Promise.reject(refreshError);
       }
     }
