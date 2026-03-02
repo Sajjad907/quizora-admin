@@ -5,10 +5,11 @@ import {
 } from 'lucide-react';
 
 export const MENU_ITEMS = [
-    { name: "Dashboard", icon: LayoutDashboard, path: "/" },
+    { name: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
     { name: "Create Quiz", icon: PlusCircle, path: "/quiz/create" },
     { name: "Quizzes", icon: FileText, path: "/quizzes" },
     { name: "Leads", icon: Users, path: "/leads" },
+    { name: "Profile", icon: Compass, path: "/profile" },
     { name: "Settings", icon: Settings, path: "/settings" },
 ];
 

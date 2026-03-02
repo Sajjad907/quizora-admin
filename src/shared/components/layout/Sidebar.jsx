@@ -1,12 +1,14 @@
 import { Link, useLocation } from "react-router-dom";
 import { useApp } from "../../../context/AppContext";
 import {
-  ChevronLeft, ChevronRight, Moon, Sun, Sparkles
+  ChevronLeft, ChevronRight, Moon, Sun, Sparkles, LogOut
 } from "lucide-react";
 import { MENU_ITEMS } from "../../../constants";
+import { useAuth } from "../../../context/AuthContext";
 
 const Sidebar = () => {
   const { isSidebarOpen, toggleSidebar, theme, toggleTheme } = useApp();
+  const { user, logout } = useAuth();
   const location = useLocation();
 
   return (
@@ -88,17 +90,28 @@ const Sidebar = () => {
           </div>
         </button>
 
-        <div className={`flex items-center gap-4 p-2 rounded-2xl transition-all cursor-pointer group ${!isSidebarOpen && "justify-center"}`}>
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-slate-200 to-slate-300 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center overflow-hidden shadow-sm group-hover:scale-110 transition-transform">
-            <img src="https://ui-avatars.com/api/?name=Admin&background=6366f1&color=fff&bold=true" alt="Avatar" className="w-full h-full object-cover" />
+        <div className={`flex items-center gap-4 p-2 rounded-2xl transition-all cursor-pointer group hover:bg-muted/50 ${!isSidebarOpen && "justify-center"}`}>
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-primary to-indigo-600 flex items-center justify-center overflow-hidden shadow-sm group-hover:scale-110 transition-transform">
+            <span className="text-white font-black text-xs">{user?.email?.[0].toUpperCase() || 'A'}</span>
           </div>
           {isSidebarOpen && (
             <div className="flex-1 overflow-hidden animate-reveal">
-              <p className="text-[13px] font-black truncate leading-tight text-foreground">Admin User</p>
+              <p className="text-[13px] font-black truncate leading-tight text-foreground">{user?.email?.split('@')[0] || 'Admin'}</p>
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none mt-1">PRO ACCOUNT</p>
             </div>
           )}
         </div>
+
+        {/* LOGOUT ACTION */}
+        <button
+          onClick={logout}
+          className={`w-full flex items-center p-4 rounded-xl text-rose-500 hover:bg-rose-500/10 transition-all group overflow-hidden ${!isSidebarOpen && "justify-center"}`}
+        >
+          <LogOut size={20} className="shrink-0 transition-transform group-hover:rotate-12" />
+          {isSidebarOpen && (
+            <span className="ml-4 text-[12px] font-black uppercase tracking-widest animate-reveal">Logout Instance</span>
+          )}
+        </button>
       </div>
 
       {/* ELEGANT TOGGLE TRIGGER */}

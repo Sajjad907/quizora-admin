@@ -177,7 +177,7 @@ const QuizList = () => {
                                  </td>
                                  <td className="px-6 py-6 whitespace-nowrap text-[12px] text-muted-foreground font-mono font-bold tracking-tight opacity-70">
                                     <a
-                                       href={`https://quizora-server-production-c5a9.up.railway.app/quiz/${quiz.handle}`}
+                                       href={`https://quizora-server.vercel.app/quiz/${quiz.handle}`}
                                        target="_blank"
                                        rel="noopener noreferrer"
                                        className="hover:text-primary transition-colors flex items-center gap-1.5"

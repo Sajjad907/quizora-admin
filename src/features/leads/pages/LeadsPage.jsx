@@ -54,7 +54,7 @@ const LeadsPage = () => {
   return (
     <Layout>
       <div className="flex flex-col h-full space-y-6 animate-reveal">
-        
+
         {/* HEADER */}
         <div className="flex flex-col md:flex-row justify-between items-end gap-4">
           <div>
@@ -64,7 +64,7 @@ const LeadsPage = () => {
               <span>Total Leads: <span className="text-primary font-bold">{totalLeads}</span></span>
             </div>
           </div>
-          <button 
+          <button
             onClick={handleExport}
             className="btn-premium px-6 h-10 flex items-center gap-2 border border-primary/20 bg-primary text-white hover:scale-[1.02] transition-all rounded-xl font-black uppercase tracking-widest text-[9px]"
           >
@@ -76,18 +76,18 @@ const LeadsPage = () => {
         <div className="bg-card border border-border/50 p-4 rounded-2xl flex flex-col md:flex-row gap-4 items-center shadow-sm">
           <div className="relative flex-1 w-full">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/50" size={18} />
-            <input 
-              type="text" 
-              placeholder="Search by name or email..." 
+            <input
+              type="text"
+              placeholder="Search by name or email..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-11 pr-4 h-12 rounded-xl bg-muted/30 border border-border/50 focus:ring-2 focus:ring-primary/20 transition-all font-medium text-sm"
             />
           </div>
-          
+
           <div className="flex items-center gap-2 w-full md:w-auto">
             <Filter size={18} className="text-muted-foreground" />
-            <select 
+            <select
               className="h-12 px-4 rounded-xl bg-muted/30 border border-border/50 focus:ring-2 focus:ring-primary/20 text-sm font-bold text-foreground min-w-[200px]"
               value={selectedQuizId}
               onChange={(e) => { setSelectedQuizId(e.target.value); setPage(1); }}
@@ -139,23 +139,22 @@ const LeadsPage = () => {
                     <tr key={lead._id || idx} className="hover:bg-muted/30 transition-colors group">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                           <div className={`w-9 h-9 rounded-full flex items-center justify-center text-white text-[10px] font-black shrink-0 border-2 border-white dark:border-slate-800 shadow-sm ${
-                             lead.firstName 
+                          <div className={`w-9 h-9 rounded-full flex items-center justify-center text-white text-[10px] font-black shrink-0 border-2 border-white dark:border-slate-800 shadow-sm ${lead.firstName
                               ? (idx % 3 === 0 ? 'bg-indigo-500' : idx % 3 === 1 ? 'bg-violet-500' : 'bg-emerald-500')
                               : 'bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500'
-                           }`}>
-                             {lead.firstName ? (
-                                `${lead.firstName[0]}${lead.lastName?.[0] || ''}`
-                             ) : (
-                                <Users size={14} />
-                             )}
-                           </div>
-                           <div className="min-w-0">
-                             <div className="font-bold text-foreground text-xs truncate max-w-[150px]">{lead.firstName ? `${lead.firstName} ${lead.lastName || ''}` : 'Anonymous User'}</div>
-                             <div className="text-[9px] text-muted-foreground font-bold flex items-center gap-1 mt-0.5 opacity-60 font-mono">
-                                <Hash size={10} /> {lead._id?.slice(-6).toUpperCase()}
-                             </div>
-                           </div>
+                            }`}>
+                            {lead.firstName ? (
+                              `${lead.firstName[0]}${lead.lastName?.[0] || ''}`
+                            ) : (
+                              <Users size={14} />
+                            )}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="font-bold text-foreground text-xs truncate max-w-[150px]">{lead.firstName ? `${lead.firstName} ${lead.lastName || ''}` : 'Anonymous User'}</div>
+                            <div className="text-[9px] text-muted-foreground font-bold flex items-center gap-1 mt-0.5 opacity-60 font-mono">
+                              <Hash size={10} /> {lead._id?.slice(-6).toUpperCase()}
+                            </div>
+                          </div>
                         </div>
                       </td>
                       <td className="px-6 py-4">
@@ -193,14 +192,14 @@ const LeadsPage = () => {
               Page <span className="text-foreground">{page}</span> of {totalPages}
             </p>
             <div className="flex gap-2">
-              <button 
+              <button
                 disabled={page === 1}
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 className="w-9 h-9 flex items-center justify-center rounded-xl border border-border/50 bg-card hover:bg-primary/5 hover:border-primary/20 text-muted-foreground hover:text-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ChevronLeft size={16} />
               </button>
-              <button 
+              <button
                 disabled={page === totalPages}
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 className="w-9 h-9 flex items-center justify-center rounded-xl border border-border/50 bg-card hover:bg-primary/5 hover:border-primary/20 text-muted-foreground hover:text-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed"

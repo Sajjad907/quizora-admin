@@ -4,6 +4,7 @@ import axios from 'axios';
 // Allows us to configure base URLs, headers, and interceptors in one place
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -32,15 +33,33 @@ apiClient.interceptors.response.use(
     // Return the data directly, simplifying component code
     return response.data;
   },
-  (error) => {
+  async (error) => {
+    const originalRequest = error.config;
     const message = error.response?.data?.message || 'Something went wrong';
     
-    // Log error for debugging (or send to Sentry)
-    console.error('API Error:', message);
+    // 1. If error is 401 and we haven't tried refreshing yet
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      
+      try {
+        console.log('[Axios] Access token expired, attempting silent refresh...');
+        // Call the refresh endpoint
+        await apiClient.post('/auth/refresh');
+        
+        // If refresh successful, retry the original request
+        console.log('[Axios] Refresh successful, retrying original request');
+        return apiClient(originalRequest);
+      } catch (refreshError) {
+        console.error('[Axios] Refresh failed, redirecting to login');
+        // If refresh fails, user must log in again
+        window.location.href = '/login';
+        return Promise.reject(refreshError);
+      }
+    }
 
-    // Optionally handle specific status codes (e.g., 401 Unauthorized)
-    if (error.response?.status === 401) {
-      // Handle logout logic here
+    // Handle other errors
+    if (error.response?.status !== 401) {
+      console.error('API Error:', message);
     }
 
     return Promise.reject({ message, status: error.response?.status });
