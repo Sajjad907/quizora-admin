@@ -10,6 +10,8 @@ import { useQuiz } from "../hooks/useQuizQueries";
 import { useUpdateQuiz } from "../hooks/useQuizMutations";
 import { v4 as uuidv4 } from "uuid";
 import toast, { Toaster } from 'react-hot-toast';
+import axios from 'axios';
+
 import ThemeCustomizer from '../components/ThemeCustomizer';
 import AnalyticsDashboard from '../../analytics/components/AnalyticsDashboard';
 import ConfirmModal from '../../../shared/components/ui/ConfirmModal';
@@ -34,6 +36,9 @@ const QuizBuilder = () => {
   const [selectedId, setSelectedId] = useState(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: '', id: null, title: '' }); // type: 'question' or 'outcome'
+  const [importUrl, setImportUrl] = useState('');
+  const [isImporting, setIsImporting] = useState(false);
+
 
   const confirmDelete = () => {
     if (confirmModal.type === 'question') {
@@ -64,10 +69,18 @@ const QuizBuilder = () => {
   };
 
   const addQuestion = (type) => {
-    const newQ = { id: uuidv4(), type, text: "New Question", options: type === 'multiple_choice' ? [{ id: uuidv4(), text: "Option 1", tags: [], weights: [] }] : [] };
+    const newQ = {
+      id: uuidv4(),
+      type,
+      text: "New Question",
+      options: (type === 'multiple_choice' || type === 'checkboxes')
+        ? [{ id: uuidv4(), text: "Option 1", tags: [], weights: [] }]
+        : []
+    };
     setQuestions([...questions, newQ]);
     setSelectedId(newQ.id);
   };
+
   const removeQuestion = (qId) => { setQuestions(questions.filter(q => (q.id || q._id) !== qId)); if (selectedId === qId) setSelectedId(null); };
   const addOutcome = () => {
     const newO = { id: uuidv4(), title: "Result Title", description: "Explain why they got this result.", buttonText: "View Product", buttonUrl: "", tags: [], recommendedProducts: [], priority: 0 };
@@ -76,12 +89,69 @@ const QuizBuilder = () => {
   };
   const removeOutcome = (oId) => { setOutcomes(outcomes.filter(o => (o.id || o._id) !== oId)); if (selectedId === oId) setSelectedId(null); };
 
+  const importShopifyProduct = async () => {
+    if (!importUrl) return toast.error('Please enter a product URL');
+
+    let url = importUrl.trim();
+    if (!url.startsWith('http')) {
+      toast.error('Please enter a valid URL');
+      return;
+    }
+
+    try {
+      setIsImporting(true);
+      // Append .js for Shopify product JSON if not already present
+      // We remove trailing slashes and query params first
+      const targetUrl = url.split('?')[0].replace(/\/$/, '') + '.js';
+
+      const response = await axios.get(targetUrl);
+      const data = response.data;
+
+      if (!data || !data.title) {
+        throw new Error('Could not find product data');
+      }
+
+      // Format price (Shopify stores price in cents)
+      const currency = data.currency || 'PKR'; // Default to PKR as per user's locale or store
+      const formattedPrice = (data.price / 100).toLocaleString('en-PK', {
+        style: 'currency',
+        currency: currency,
+        minimumFractionDigits: 0
+      });
+
+      const newProduct = {
+        title: data.title,
+        price: formattedPrice,
+        imageUrl: data.featured_image ? (data.featured_image.startsWith('//') ? 'https:' + data.featured_image : data.featured_image) : '',
+        handle: data.handle,
+        reason: ''
+      };
+
+      const newO = [...outcomes];
+      const oIdx = newO.findIndex(o => (o.id || o._id) === selectedId);
+      if (oIdx === -1) return;
+
+      if (!newO[oIdx].recommendedProducts) newO[oIdx].recommendedProducts = [];
+      newO[oIdx].recommendedProducts.push(newProduct);
+
+      setOutcomes(newO);
+      setImportUrl('');
+      toast.success('Product imported!');
+    } catch (error) {
+      console.error('Import error:', error);
+      toast.error('Import failed. Check the URL and try again.');
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
+
   const selectedQuestion = questions.find(q => (q.id || q._id) === selectedId);
   const selectedOutcome = outcomes.find(o => (o.id || o._id) === selectedId);
 
   if (isLoading) return <div className="h-screen flex items-center justify-center bg-background"><Loader2 className="animate-spin text-primary" size={32} /></div>;
 
-  const tabClass = (tab) => `px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all duration-300 ${activeTab === tab ? 'bg-white text-primary shadow-lg shadow-primary/5 border border-primary/20 scale-105' : 'text-slate-400 hover:text-slate-600'}`;
+  const tabClass = (tab) => `px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all duration-300 ${activeTab === tab ? 'bg-card text-primary shadow-lg shadow-primary/5 border border-primary/20 scale-105' : 'text-muted-foreground hover:text-foreground'}`;
 
   return (
     <div className="min-h-screen bg-background flex flex-col overflow-hidden">
@@ -99,12 +169,12 @@ const QuizBuilder = () => {
         type="danger"
       />
 
-      <header className="h-20 bg-white border-b border-slate-100 flex items-center justify-between px-8 z-50 shadow-sm">
+      <header className="h-20 bg-card border-b border-border flex items-center justify-between px-8 z-50 shadow-sm transition-colors duration-500">
         <div className="flex items-center gap-10">
           <button onClick={() => navigate('/quizzes')} className="w-12 h-12 flex items-center justify-center hover:bg-muted rounded-2xl transition-all border border-border/50 text-muted-foreground group">
             <ChevronRight size={20} className="rotate-180 group-hover:-translate-x-1 transition-transform" />
           </button>
-          <div className="flex bg-slate-50 p-1 rounded-2xl border border-slate-100 shadow-inner">
+          <div className="flex bg-muted/50 p-1 rounded-2xl border border-border shadow-inner">
             <button onClick={() => { setActiveTab('questions'); setSelectedId(null); }} className={tabClass('questions')}>Steps</button>
             <button onClick={() => { setActiveTab('outcomes'); setSelectedId(null); }} className={tabClass('outcomes')}>Results</button>
             <button onClick={() => { setActiveTab('settings'); setSelectedId(null); }} className={tabClass('settings')}>Settings</button>
@@ -115,7 +185,7 @@ const QuizBuilder = () => {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <button onClick={() => setIsPreviewOpen(true)} className="h-11 px-5 rounded-xl border border-slate-200 text-[10px] font-bold hover:bg-slate-50 transition-all flex items-center gap-2.5 uppercase tracking-widest text-slate-600 shadow-sm active:scale-95 bg-white">
+          <button onClick={() => setIsPreviewOpen(true)} className="h-11 px-5 rounded-xl border border-border text-[10px] font-bold hover:bg-muted transition-all flex items-center gap-2.5 uppercase tracking-widest text-muted-foreground shadow-sm active:scale-95 bg-card">
             <Eye size={16} className="text-primary" /> Live Preview
           </button>
           <button onClick={handleSave} disabled={isSaving} className="h-11 px-6 rounded-xl bg-primary text-white text-[10px] font-bold flex items-center gap-2.5 uppercase tracking-widest shadow-xl shadow-primary/20 hover:bg-primary/95 transition-all active:scale-95 disabled:opacity-50">
@@ -126,7 +196,7 @@ const QuizBuilder = () => {
 
       <div className="flex flex-1 overflow-hidden">
         {activeTab !== 'customize' && activeTab !== 'analytics' && (
-          <aside className="w-[320px] bg-white border-r border-slate-100 p-6 overflow-y-auto hidden lg:flex flex-col z-20 shadow-sm transition-all duration-500">
+          <aside className="w-[320px] bg-card border-r border-border p-6 overflow-y-auto hidden lg:flex flex-col z-20 shadow-sm transition-all duration-500">
             <div className="mb-10">
               <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground ml-2 mb-4 text-primary/40">Toolkit</h3>
               <div className="space-y-3">
@@ -146,8 +216,8 @@ const QuizBuilder = () => {
                   <div className="p-6 bg-primary/5 rounded-3xl border border-primary/10">
                     <div className="flex items-center justify-between mb-4">
                       <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary"><Mail size={20} /></div>
-                      <div onClick={() => setSettings({ ...settings, collectEmail: !settings.collectEmail })} className={`w-12 h-6 rounded-full transition-all cursor-pointer relative ${settings.collectEmail ? 'bg-primary' : 'bg-slate-200'}`}>
-                        <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${settings.collectEmail ? 'left-7' : 'left-1'}`} />
+                      <div onClick={() => setSettings({ ...settings, collectEmail: !settings.collectEmail })} className={`w-12 h-6 rounded-full transition-all cursor-pointer relative ${settings.collectEmail ? 'bg-primary' : 'bg-muted'}`}>
+                        <div className={`absolute top-1 w-4 h-4 bg-card rounded-full transition-all ${settings.collectEmail ? 'left-7' : 'left-1'}`} />
                       </div>
                     </div>
                     <h4 className="text-[12px] font-black uppercase tracking-tight mb-2">Lead Capture</h4>
@@ -159,7 +229,7 @@ const QuizBuilder = () => {
           </aside>
         )}
 
-        <main className={`flex-1 overflow-y-auto ${activeTab === 'analytics' ? 'bg-slate-50' : 'bg-background'} flex flex-col ${activeTab === 'analytics' ? '' : 'items-center'} scroll-smooth bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent`}>
+        <main className={`flex-1 overflow-y-auto ${activeTab === 'analytics' ? 'bg-background' : 'bg-background'} flex flex-col ${activeTab === 'analytics' ? '' : 'items-center'} scroll-smooth bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent`}>
           {activeTab === 'customize' ? (
             <ThemeCustomizer
               quiz={{ ...quiz, theme, settings, branding }}
@@ -191,14 +261,15 @@ const QuizBuilder = () => {
                     <button onClick={() => addQuestion('multiple_choice')} className="btn-premium">Add First Question</button>
                   </div>
                 ) : questions.map((q, idx) => (
-                  <div key={q.id || q._id} onClick={() => setSelectedId(q.id || q._id)} className={`group p-7 rounded-3xl animate-in fade-in slide-in-from-bottom-4 duration-500 cursor-pointer transition-all border-2 relative overflow-hidden ${selectedId === (q.id || q._id) ? 'bg-white border-primary shadow-2xl shadow-primary/10 scale-[1.02] z-10' : 'bg-white/40 backdrop-blur-sm border-transparent hover:border-primary/20 hover:bg-white shadow-sm'}`}>
+                  <div key={q.id || q._id} onClick={() => setSelectedId(q.id || q._id)} className={`group p-7 rounded-3xl animate-in fade-in slide-in-from-bottom-4 duration-500 cursor-pointer transition-all border-2 relative overflow-hidden ${selectedId === (q.id || q._id) ? 'bg-card border-primary shadow-2xl shadow-primary/10 scale-[1.02] z-10' : 'bg-card/40 backdrop-blur-sm border-transparent hover:border-primary/20 hover:bg-card shadow-sm'}`}>
                     <div className="flex items-center gap-5 mb-8">
                       <span className="text-[12px] font-bold bg-primary text-white w-10 h-10 flex items-center justify-center rounded-2xl shadow-xl shadow-primary/20 transition-transform group-hover:rotate-12">{idx + 1}</span>
                       <span className="text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground/40">{q.type.replace('_', ' ')}</span>
                       {selectedId === (q.id || q._id) && <div className="ml-auto w-2 h-2 rounded-full bg-primary animate-pulse" />}
                     </div>
-                    <h3 className="text-2xl font-bold tracking-tight text-slate-900 leading-tight">{q.text}</h3>
-                    {q.type === 'multiple_choice' && <div className="flex gap-2 mt-10">{q.options.map((_, i) => <div key={i} className="w-10 h-1.5 rounded-full bg-muted group-hover:bg-primary/20 transition-colors" />)}</div>}
+                    <h3 className="text-2xl font-bold tracking-tight text-foreground leading-tight">{q.text}</h3>
+                    {(q.type === 'multiple_choice' || q.type === 'checkboxes') && <div className="flex gap-2 mt-10">{q.options.map((_, i) => <div key={i} className="w-10 h-1.5 rounded-full bg-muted group-hover:bg-primary/20 transition-colors" />)}</div>}
+
                   </div>
                 ))
               ) : (
@@ -209,12 +280,12 @@ const QuizBuilder = () => {
                     <button onClick={addOutcome} className="btn-premium">Create First Outcome</button>
                   </div>
                 ) : outcomes.map((o, idx) => (
-                  <div key={o.id || o._id} onClick={() => setSelectedId(o.id || o._id)} className={`group p-7 rounded-3xl animate-in fade-in slide-in-from-bottom-4 duration-500 cursor-pointer transition-all border-2 relative overflow-hidden ${selectedId === (o.id || o._id) ? 'bg-white border-primary shadow-2xl shadow-primary/10 scale-[1.02] z-10' : 'bg-white/40 backdrop-blur-sm border-transparent hover:border-primary/20 hover:bg-white shadow-sm'}`}>
+                  <div key={o.id || o._id} onClick={() => setSelectedId(o.id || o._id)} className={`group p-7 rounded-3xl animate-in fade-in slide-in-from-bottom-4 duration-500 cursor-pointer transition-all border-2 relative overflow-hidden ${selectedId === (o.id || o._id) ? 'bg-card border-primary shadow-2xl shadow-primary/10 scale-[1.02] z-10' : 'bg-card/40 backdrop-blur-sm border-transparent hover:border-primary/20 hover:bg-card shadow-sm'}`}>
                     <div className="flex items-center gap-5 mb-8 text-primary">
                       <Sparkles size={28} className="group-hover:rotate-12 transition-transform" />
                       <span className="text-[10px] font-black uppercase tracking-[0.25em] text-primary/40">Result #{idx + 1}</span>
                     </div>
-                    <h3 className="text-2xl font-bold tracking-tight text-slate-900 leading-tight mb-4">{o.title}</h3>
+                    <h3 className="text-2xl font-bold tracking-tight text-foreground leading-tight mb-4">{o.title}</h3>
                     <p className="text-muted-foreground/60 text-[15px] line-clamp-2 italic leading-relaxed font-medium">{o.description}</p>
                   </div>
                 ))
@@ -223,7 +294,7 @@ const QuizBuilder = () => {
           )}
         </main>
 
-        <aside className={`w-[420px] bg-white border-l border-slate-100 p-8 fixed inset-y-0 right-0 lg:relative z-40 transition-all duration-500 ease-out shadow-[-20px_0_60px_-15px_rgba(0,0,0,0.05)] overflow-y-auto custom-scrollbar ${selectedId ? 'translate-x-0' : 'translate-x-full lg:translate-x-0 lg:hidden'}`}>
+        <aside className={`w-[420px] bg-card border-l border-border p-8 fixed inset-y-0 right-0 lg:relative z-40 transition-all duration-500 ease-out shadow-[-20px_0_60px_-15px_rgba(0,0,0,0.05)] overflow-y-auto custom-scrollbar ${selectedId ? 'translate-x-0' : 'translate-x-full lg:translate-x-0 lg:hidden'}`}>
           {activeTab === 'questions' && selectedQuestion ? (
             <div className="space-y-10 animate-reveal">
               <div className="flex items-center justify-between border-b border-border/50 pb-8">
@@ -232,18 +303,18 @@ const QuizBuilder = () => {
               </div>
               <div className="space-y-8">
                 <div className="space-y-4">
-                  <label className="text-[10px] font-black uppercase text-slate-400 tracking-[0.1em] ml-1">Question Text</label>
-                  <textarea value={selectedQuestion.text} onChange={(e) => setQuestions(questions.map(q => (q.id || q._id) === selectedId ? { ...q, text: e.target.value } : q))} className="w-full bg-slate-50/50 p-4 rounded-xl outline-none text-sm font-bold min-h-[100px] border border-slate-200 focus:border-primary/40 focus:ring-4 focus:ring-primary/5 text-slate-900 shadow-sm transition-all" />
+                  <label className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.1em] ml-1">Question Text</label>
+                  <textarea value={selectedQuestion.text} onChange={(e) => setQuestions(questions.map(q => (q.id || q._id) === selectedId ? { ...q, text: e.target.value } : q))} className="w-full bg-muted/30 p-4 rounded-xl outline-none text-sm font-bold min-h-[100px] border border-border focus:border-primary/40 focus:ring-4 focus:ring-primary/5 text-foreground shadow-sm transition-all" />
                 </div>
-                {selectedQuestion.type === 'multiple_choice' && (
+                {(selectedQuestion.type === 'multiple_choice' || selectedQuestion.type === 'checkboxes') && (
                   <div className="space-y-6">
                     <label className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-[0.2em] ml-1">Answer Choices & Scoring</label>
                     <div className="space-y-4">
                       {selectedQuestion.options.map((o, io) => (
-                        <div key={o.id} className="flex flex-col gap-3 p-4 bg-white rounded-2xl border border-slate-200 group/opt relative" style={{ zIndex: selectedQuestion.options.length - io }}>
+                        <div key={o.id} className="flex flex-col gap-3 p-4 bg-card rounded-2xl border border-border group/opt relative" style={{ zIndex: selectedQuestion.options.length - io }}>
                           <div className="flex gap-3 items-center">
-                            <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-[10px] font-black shrink-0 border border-slate-200 text-slate-500">{io + 1}</div>
-                            <input type="text" value={o.text} onChange={(e) => { const newQs = [...questions]; const qIdx = newQs.findIndex(q => (q.id || q._id) === selectedId); newQs[qIdx].options[io].text = e.target.value; setQuestions(newQs); }} className="flex-1 bg-transparent p-1 text-[13px] font-bold outline-none text-slate-800" />
+                            <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-[10px] font-black shrink-0 border border-border text-muted-foreground">{io + 1}</div>
+                            <input type="text" value={o.text} onChange={(e) => { const newQs = [...questions]; const qIdx = newQs.findIndex(q => (q.id || q._id) === selectedId); newQs[qIdx].options[io].text = e.target.value; setQuestions(newQs); }} className="flex-1 bg-transparent p-1 text-[13px] font-bold outline-none text-foreground" />
                             <button onClick={() => { const newQs = [...questions]; const qIdx = newQs.findIndex(q => (q.id || q._id) === selectedId); newQs[qIdx].options.splice(io, 1); setQuestions(newQs); }} className="p-2 text-rose-500/30 hover:text-rose-500 hover:bg-rose-50 transition-all opacity-0 group-hover/opt:opacity-100"><Trash2 size={16} /></button>
                           </div>
 
@@ -289,7 +360,7 @@ const QuizBuilder = () => {
                                         newQs[qIdx].options[io].weights[iw].points = parseInt(e.target.value);
                                         setQuestions(newQs);
                                       }}
-                                      className="w-16 h-11 bg-white border border-slate-200 rounded-xl text-center text-[11px] font-bold shadow-sm"
+                                      className="w-16 h-11 bg-card border border-border rounded-xl text-center text-[11px] font-bold shadow-sm"
                                     />
                                     <button onClick={() => {
                                       const newQs = [...questions];
@@ -311,7 +382,7 @@ const QuizBuilder = () => {
                           </div>
                         </div>
                       ))}
-                      <button onClick={() => { const newQs = [...questions]; const qIdx = newQs.findIndex(q => (q.id || q._id) === selectedId); newQs[qIdx].options.push({ id: uuidv4(), text: 'New Choice', tags: [], weights: [] }); setQuestions(newQs); }} className="w-full h-12 border-2 border-dashed border-slate-200 text-slate-400 text-[10px] font-black rounded-xl hover:bg-slate-50 hover:border-primary/40 hover:text-primary transition-all uppercase tracking-widest">+ Add Answer Choice</button>
+                      <button onClick={() => { const newQs = [...questions]; const qIdx = newQs.findIndex(q => (q.id || q._id) === selectedId); newQs[qIdx].options.push({ id: uuidv4(), text: 'New Choice', tags: [], weights: [] }); setQuestions(newQs); }} className="w-full h-12 border-2 border-dashed border-border text-muted-foreground/40 text-[10px] font-black rounded-xl hover:bg-muted/50 hover:border-primary/40 hover:text-primary transition-all uppercase tracking-widest">+ Add Answer Choice</button>
                     </div>
                   </div>
                 )}
@@ -323,21 +394,21 @@ const QuizBuilder = () => {
           ) : activeTab === 'outcomes' && selectedOutcome ? (
             <div className="space-y-10 animate-reveal">
               <div className="flex items-center justify-between border-b border-border/50 pb-8">
-                <div><h3 className="text-[10px] font-bold uppercase tracking-[0.1em] text-primary mb-1">Configuration</h3><span className="text-lg font-bold text-slate-800 tracking-tight">Outcome Meta</span></div>
+                <div><h3 className="text-[10px] font-bold uppercase tracking-[0.1em] text-primary mb-1">Configuration</h3><span className="text-lg font-bold text-foreground tracking-tight">Outcome Meta</span></div>
                 <button onClick={() => setSelectedId(null)} className="w-12 h-12 flex items-center justify-center hover:bg-muted rounded-2xl transition-colors border border-border/50 text-muted-foreground"><X size={20} /></button>
               </div>
               <div className="space-y-8">
                 <div className="space-y-4">
-                  <label className="text-[10px] font-bold uppercase text-slate-400 tracking-[0.1em] ml-1">Outcome Headline</label>
-                  <input type="text" value={selectedOutcome.title} onChange={(e) => setOutcomes(outcomes.map(o => (o.id || o._id) === selectedId ? { ...o, title: e.target.value } : o))} className="w-full h-14 bg-slate-50/50 px-5 rounded-2xl outline-none text-lg font-bold border border-slate-200 focus:border-primary/40 focus:ring-4 focus:ring-primary/5 transition-all text-slate-900 shadow-sm" />
+                  <label className="text-[10px] font-bold uppercase text-muted-foreground tracking-[0.1em] ml-1">Outcome Headline</label>
+                  <input type="text" value={selectedOutcome.title} onChange={(e) => setOutcomes(outcomes.map(o => (o.id || o._id) === selectedId ? { ...o, title: e.target.value } : o))} className="w-full h-14 bg-muted/30 px-5 rounded-2xl outline-none text-lg font-bold border border-border focus:border-primary/40 focus:ring-4 focus:ring-primary/5 transition-all text-foreground shadow-sm" />
                 </div>
                 <div className="space-y-4">
-                  <label className="text-[10px] font-bold uppercase text-slate-400 tracking-[0.1em] ml-1">Detail Description</label>
-                  <textarea value={selectedOutcome.description} onChange={(e) => setOutcomes(outcomes.map(o => (o.id || o._id) === selectedId ? { ...o, description: e.target.value } : o))} className="w-full bg-slate-50/50 p-5 rounded-2xl outline-none text-sm font-medium min-h-[120px] border border-slate-200 focus:border-primary/40 leading-relaxed text-slate-600 italic shadow-sm" />
+                  <label className="text-[10px] font-bold uppercase text-muted-foreground tracking-[0.1em] ml-1">Detail Description</label>
+                  <textarea value={selectedOutcome.description} onChange={(e) => setOutcomes(outcomes.map(o => (o.id || o._id) === selectedId ? { ...o, description: e.target.value } : o))} className="w-full bg-muted/30 p-5 rounded-2xl outline-none text-sm font-medium min-h-[120px] border border-border focus:border-primary/40 leading-relaxed text-muted-foreground italic shadow-sm" />
                 </div>
 
                 <div className="space-y-4">
-                  <label className="text-[10px] font-bold uppercase text-slate-400 tracking-[0.1em] ml-1 flex items-center justify-between">
+                  <label className="text-[10px] font-bold uppercase text-muted-foreground tracking-[0.1em] ml-1 flex items-center justify-between">
                     Matching Tags
                     <span className="text-[9px] font-bold text-slate-300 lowercase italic normal-case">semantic matching active</span>
                   </label>
@@ -350,32 +421,32 @@ const QuizBuilder = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-3">
-                    <label className="text-[9px] font-bold uppercase text-slate-400 tracking-widest ml-1">CTA Text</label>
-                    <input type="text" value={selectedOutcome.buttonText || ""} onChange={(e) => setOutcomes(outcomes.map(o => (o.id || o._id) === selectedId ? { ...o, buttonText: e.target.value } : o))} className="w-full h-11 bg-white px-4 rounded-xl text-[11px] font-bold border border-slate-200 text-slate-800 shadow-sm" />
+                    <label className="text-[9px] font-bold uppercase text-muted-foreground tracking-widest ml-1">CTA Text</label>
+                    <input type="text" value={selectedOutcome.buttonText || ""} onChange={(e) => setOutcomes(outcomes.map(o => (o.id || o._id) === selectedId ? { ...o, buttonText: e.target.value } : o))} className="w-full h-11 bg-card px-4 rounded-xl text-[11px] font-bold border border-border text-foreground shadow-sm" />
                   </div>
                   <div className="space-y-3">
-                    <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest ml-1 flex items-center gap-1">Redirect <Link size={10} className="text-primary" /></label>
-                    <input type="text" placeholder="https://..." value={selectedOutcome.buttonUrl || ""} onChange={(e) => setOutcomes(outcomes.map(o => (o.id || o._id) === selectedId ? { ...o, buttonUrl: e.target.value } : o))} className="w-full h-11 bg-white px-4 rounded-xl text-[11px] font-bold border border-slate-200 text-slate-700 shadow-sm" />
+                    <label className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest ml-1 flex items-center gap-1">Redirect <Link size={10} className="text-primary" /></label>
+                    <input type="text" placeholder="https://..." value={selectedOutcome.buttonUrl || ""} onChange={(e) => setOutcomes(outcomes.map(o => (o.id || o._id) === selectedId ? { ...o, buttonUrl: e.target.value } : o))} className="w-full h-11 bg-card px-4 rounded-xl text-[11px] font-bold border border-border text-foreground shadow-sm" />
                   </div>
                 </div>
 
-                <div className="space-y-5 pt-8 border-t border-slate-100 italic">
-                  <label className="text-[10px] font-bold uppercase text-slate-400 tracking-[0.1em] ml-1 flex items-center justify-between">
+                <div className="space-y-5 pt-8 border-t border-border/50 italic">
+                  <label className="text-[10px] font-bold uppercase text-muted-foreground tracking-[0.1em] ml-1 flex items-center justify-between">
                     Scoring Intelligence
                     <span className="text-[9px] font-bold text-primary/40 lowercase">Tie-breaker & Thresholds</span>
                   </label>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <span className="text-[8px] font-bold uppercase text-slate-400 ml-1">Selection Priority</span>
-                      <input type="number" placeholder="10" value={selectedOutcome.priority || 0} onChange={(e) => setOutcomes(outcomes.map(o => (o.id || o._id) === selectedId ? { ...o, priority: parseInt(e.target.value) } : o))} className="w-full h-10 bg-slate-50 px-4 rounded-xl text-[11px] font-bold border border-slate-200" />
+                      <span className="text-[8px] font-bold uppercase text-muted-foreground ml-1">Selection Priority</span>
+                      <input type="number" placeholder="10" value={selectedOutcome.priority || 0} onChange={(e) => setOutcomes(outcomes.map(o => (o.id || o._id) === selectedId ? { ...o, priority: parseInt(e.target.value) } : o))} className="w-full h-10 bg-muted/50 px-4 rounded-xl text-[11px] font-bold border border-border" />
                     </div>
                     <div className="space-y-1.5">
-                      <span className="text-[8px] font-bold uppercase text-slate-400 ml-1">Min Match Score</span>
-                      <input type="number" placeholder="0" value={selectedOutcome.minScore || 0} onChange={(e) => setOutcomes(outcomes.map(o => (o.id || o._id) === selectedId ? { ...o, minScore: parseInt(e.target.value) } : o))} className="w-full h-10 bg-slate-50 px-4 rounded-xl text-[11px] font-bold border border-slate-200" />
+                      <span className="text-[8px] font-bold uppercase text-muted-foreground ml-1">Min Match Score</span>
+                      <input type="number" placeholder="0" value={selectedOutcome.minScore || 0} onChange={(e) => setOutcomes(outcomes.map(o => (o.id || o._id) === selectedId ? { ...o, minScore: parseInt(e.target.value) } : o))} className="w-full h-10 bg-muted/50 px-4 rounded-xl text-[11px] font-bold border border-border" />
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <span className="text-[8px] font-bold uppercase text-slate-400 ml-1">Incentive / Coupon Code</span>
+                    <span className="text-[8px] font-bold uppercase text-muted-foreground ml-1">Incentive / Coupon Code</span>
                     <div className="relative">
                       <Tag size={12} className="absolute left-4 top-1/2 -translate-y-1/2 text-primary" />
                       <input type="text" placeholder="e.g. WELCOME20" value={selectedOutcome.discountCode || ""} onChange={(e) => setOutcomes(outcomes.map(o => (o.id || o._id) === selectedId ? { ...o, discountCode: e.target.value } : o))} className="w-full h-11 bg-primary/[0.03] pl-10 pr-4 rounded-xl text-[11px] font-black border border-primary/10 text-primary placeholder:text-primary/20 uppercase tracking-widest" />
@@ -383,35 +454,67 @@ const QuizBuilder = () => {
                   </div>
                 </div>
 
-                <div className="space-y-6 pt-8 border-t border-slate-100">
-                  <label className="text-[10px] font-bold uppercase text-slate-400 tracking-[0.1em] ml-1 flex items-center justify-between">Recommended Products<span className="text-[9px] font-bold text-slate-300 lowercase italic">Inventory Link</span></label>
+                <div className="space-y-4 pt-8 border-t border-border/50">
+                  <div className="flex items-center justify-between px-1">
+                    <label className="text-[10px] font-bold uppercase text-muted-foreground tracking-[0.1em]">Shopify Importer</label>
+                    <div className="flex items-center gap-1">
+                      <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="text-[8px] font-bold text-emerald-500 uppercase tracking-widest">Connect Active</span>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <div className="relative flex-1 group">
+                      <Link size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
+                      <input
+                        type="text"
+                        placeholder="Paste Shopify Product URL..."
+                        value={importUrl}
+                        onChange={(e) => setImportUrl(e.target.value)}
+                        className="w-full h-12 bg-muted/30 pl-11 pr-4 rounded-xl text-[11px] font-medium border border-border focus:border-primary/40 focus:ring-4 focus:ring-primary/5 transition-all text-foreground"
+                      />
+                    </div>
+                    <button
+                      onClick={importShopifyProduct}
+                      disabled={isImporting || !importUrl}
+                      className="px-6 h-12 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:grayscale text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 transition-all active:scale-95 flex items-center gap-2 shrink-0"
+                    >
+                      {isImporting ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+                      {isImporting ? 'Importing' : 'Import'}
+                    </button>
+                  </div>
+                  <p className="text-[9px] font-medium text-muted-foreground/40 px-1 italic">Example: https://www.dermamage.com/products/mage-glow-360-brightening-cream</p>
+                </div>
+
+                <div className="space-y-6 pt-8 border-t border-border/50">
+                  <label className="text-[10px] font-bold uppercase text-muted-foreground tracking-[0.1em] ml-1 flex items-center justify-between">Recommended Products<span className="text-[9px] font-bold text-muted-foreground/30 lowercase italic">Inventory Link</span></label>
+
                   <div className="space-y-4">
                     {(selectedOutcome.recommendedProducts || []).map((p, ip) => (
-                      <div key={ip} className="p-4 bg-white rounded-2xl border border-slate-200 space-y-3 animate-in fade-in duration-300 shadow-sm">
+                      <div key={ip} className="p-4 bg-card rounded-2xl border border-border space-y-3 animate-in fade-in duration-300 shadow-sm">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-200 overflow-hidden shadow-sm">{p.imageUrl ? <img src={p.imageUrl} className="w-full h-full object-cover" /> : <Link size={14} className="opacity-10" />}</div>
-                            <input type="text" placeholder="Product Name" value={p.title || ''} onChange={(e) => { const newO = [...outcomes]; const oIdx = newO.findIndex(o => (o.id || o._id) === selectedId); newO[oIdx].recommendedProducts[ip].title = e.target.value; setOutcomes(newO); }} className="bg-transparent text-[13px] font-bold outline-none border-none p-0 w-44 text-slate-800" />
+                            <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center border border-border overflow-hidden shadow-sm">{p.imageUrl ? <img src={p.imageUrl} className="w-full h-full object-cover" /> : <Link size={14} className="opacity-10" />}</div>
+                            <input type="text" placeholder="Product Name" value={p.title || ''} onChange={(e) => { const newO = [...outcomes]; const oIdx = newO.findIndex(o => (o.id || o._id) === selectedId); newO[oIdx].recommendedProducts[ip].title = e.target.value; setOutcomes(newO); }} className="bg-transparent text-[13px] font-bold outline-none border-none p-0 w-44 text-foreground" />
                           </div>
                           <button onClick={() => { const newO = [...outcomes]; const oIdx = newO.findIndex(o => (o.id || o._id) === selectedId); newO[oIdx].recommendedProducts.splice(ip, 1); setOutcomes(newO); }} className="p-3 text-rose-500/20 hover:text-rose-500 hover:bg-rose-500/5 rounded-xl transition-all"><Trash2 size={14} /></button>
                         </div>
                         <div className="grid grid-cols-2 gap-3">
                           <div className="space-y-1">
-                            <span className="text-[8px] font-bold uppercase text-slate-400 ml-1">Price</span>
-                            <input type="text" placeholder="e.g. $49.00" value={p.price || ''} onChange={(e) => { const newO = [...outcomes]; const oIdx = newO.findIndex(o => (o.id || o._id) === selectedId); newO[oIdx].recommendedProducts[ip].price = e.target.value; setOutcomes(newO); }} className="w-full h-9 bg-slate-50 px-3 rounded-lg text-[10px] font-bold outline-none border border-slate-200 focus:border-primary/40 transition-all shadow-inner" />
+                            <span className="text-[8px] font-bold uppercase text-muted-foreground ml-1">Price</span>
+                            <input type="text" placeholder="e.g. $49.00" value={p.price || ''} onChange={(e) => { const newO = [...outcomes]; const oIdx = newO.findIndex(o => (o.id || o._id) === selectedId); newO[oIdx].recommendedProducts[ip].price = e.target.value; setOutcomes(newO); }} className="w-full h-9 bg-muted/50 px-3 rounded-lg text-[10px] font-bold outline-none border border-border focus:border-primary/40 transition-all shadow-inner" />
                           </div>
                           <div className="space-y-1">
-                            <span className="text-[8px] font-bold uppercase text-slate-400 ml-1">Image Link</span>
-                            <input type="text" placeholder="URL" value={p.imageUrl || ''} onChange={(e) => { const newO = [...outcomes]; const oIdx = newO.findIndex(o => (o.id || o._id) === selectedId); newO[oIdx].recommendedProducts[ip].imageUrl = e.target.value; setOutcomes(newO); }} className="w-full h-9 bg-slate-50 px-3 rounded-lg text-[10px] font-bold outline-none border border-slate-200 focus:border-primary/40 transition-all shadow-inner" />
+                            <span className="text-[8px] font-bold uppercase text-muted-foreground ml-1">Image Link</span>
+                            <input type="text" placeholder="URL" value={p.imageUrl || ''} onChange={(e) => { const newO = [...outcomes]; const oIdx = newO.findIndex(o => (o.id || o._id) === selectedId); newO[oIdx].recommendedProducts[ip].imageUrl = e.target.value; setOutcomes(newO); }} className="w-full h-9 bg-muted/50 px-3 rounded-lg text-[10px] font-bold outline-none border border-border focus:border-primary/40 transition-all shadow-inner" />
                           </div>
                         </div>
                         <div className="space-y-1 text-primary">
                           <span className="text-[8px] font-bold uppercase text-primary/40 ml-1 flex items-center gap-1">Why recommend this? <Sparkles size={8} /></span>
-                          <textarea placeholder="e.g. This matches your oily skin profile perfectly." value={p.reason || ''} onChange={(e) => { const newO = [...outcomes]; const oIdx = newO.findIndex(o => (o.id || o._id) === selectedId); newO[oIdx].recommendedProducts[ip].reason = e.target.value; setOutcomes(newO); }} className="w-full h-16 bg-primary/[0.02] p-3 rounded-xl text-[10px] font-medium italic border border-primary/5 focus:border-primary/20 outline-none text-slate-600 leading-normal" />
+                          <textarea placeholder="e.g. This matches your oily skin profile perfectly." value={p.reason || ''} onChange={(e) => { const newO = [...outcomes]; const oIdx = newO.findIndex(o => (o.id || o._id) === selectedId); newO[oIdx].recommendedProducts[ip].reason = e.target.value; setOutcomes(newO); }} className="w-full h-16 bg-primary/[0.02] p-3 rounded-xl text-[10px] font-medium italic border border-primary/5 focus:border-primary/20 outline-none text-muted-foreground leading-normal" />
                         </div>
                       </div>
                     ))}
-                    <button onClick={() => { const newO = [...outcomes]; const oIdx = newO.findIndex(o => (o.id || o._id) === selectedId); if (!newO[oIdx].recommendedProducts) newO[oIdx].recommendedProducts = []; newO[oIdx].recommendedProducts.push({ title: 'New Product', price: '$0.00', imageUrl: '', handle: '' }); setOutcomes(newO); }} className="w-full py-4 border-2 border-dashed border-slate-200 text-slate-400 text-[10px] font-black rounded-2xl hover:bg-slate-50 hover:border-primary/40 hover:text-primary transition-all uppercase tracking-widest shadow-sm">+ Add Recommendation</button>
+                    <button onClick={() => { const newO = [...outcomes]; const oIdx = newO.findIndex(o => (o.id || o._id) === selectedId); if (!newO[oIdx].recommendedProducts) newO[oIdx].recommendedProducts = []; newO[oIdx].recommendedProducts.push({ title: 'New Product', price: '$0.00', imageUrl: '', handle: '' }); setOutcomes(newO); }} className="w-full py-4 border-2 border-dashed border-border text-muted-foreground/40 text-[10px] font-black rounded-2xl hover:bg-muted/50 hover:border-primary/40 hover:text-primary transition-all uppercase tracking-widest shadow-sm">+ Add Recommendation</button>
                   </div>
                 </div>
 

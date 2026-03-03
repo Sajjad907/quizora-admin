@@ -51,7 +51,7 @@ const LiveWidgetPreview = ({ theme, settings, viewMode, setViewMode, onClose }) 
         <div className={`sticky top-8 shrink-0 transition-all duration-700 ease-in-out ${viewMode === 'desktop' ? 'w-full mt-12' : 'w-fit'}`}>
             <div className="flex flex-col items-center gap-6">
                 {/* Device Switcher */}
-                <div className="bg-white p-1.5 rounded-2xl border border-slate-200 shadow-xl flex items-center gap-1 z-30">
+                <div className="bg-card p-1.5 rounded-2xl border border-border shadow-xl flex items-center gap-1 z-30">
                     {[
                         { id: 'mobile', icon: <Smartphone size={14} /> },
                         { id: 'tablet', icon: <Tablet size={14} /> },
@@ -60,16 +60,17 @@ const LiveWidgetPreview = ({ theme, settings, viewMode, setViewMode, onClose }) 
                         <button
                             key={mode.id}
                             onClick={() => setViewMode(mode.id)}
-                            className={`p-2.5 rounded-xl transition-all ${viewMode === mode.id ? 'bg-primary text-white shadow-lg' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
+                            className={`p-2.5 rounded-xl transition-all ${viewMode === mode.id ? 'bg-primary text-white shadow-lg' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}
                         >
                             {mode.icon}
                         </button>
                     ))}
-                    <div className="w-[1px] h-6 bg-slate-100 mx-1" />
+                    <div className="w-[1px] h-6 bg-border mx-1" />
                     <button onClick={onClose} className="p-2.5 rounded-xl text-rose-500 hover:bg-rose-50 transition-all" title="Hide Preview">
                         <EyeOff size={14} />
                     </button>
                 </div>
+
 
                 {/* Frame Container */}
                 <div
@@ -247,12 +248,13 @@ const LiveWidgetPreview = ({ theme, settings, viewMode, setViewMode, onClose }) 
                 </div>
 
                 {/* Live Sync Badge */}
-                <div className="px-4 py-2 bg-white rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
+                <div className="px-4 py-2 bg-card rounded-2xl border border-border shadow-sm flex items-center gap-3">
                     <div className="flex items-center gap-1.5">
                         <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Live Sync</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Live Sync</span>
                     </div>
                 </div>
+
             </div>
         </div>
     );

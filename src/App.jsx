@@ -34,7 +34,37 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <AppProvider>
-          <Toaster position="bottom-right" />
+          <Toaster
+            position="top-center"
+            toastOptions={{
+              duration: 4000,
+              style: {
+                background: 'rgba(15, 15, 15, 0.7)',
+                backdropFilter: 'blur(12px)',
+                color: '#fff',
+                borderRadius: '16px',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                padding: '16px 24px',
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.02em',
+                boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+                maxWidth: '450px',
+              },
+              success: {
+                iconTheme: {
+                  primary: '#3b82f6',
+                  secondary: '#fff',
+                },
+              },
+              error: {
+                iconTheme: {
+                  primary: '#ef4444',
+                  secondary: '#fff',
+                },
+              },
+            }}
+          />
           <BrowserRouter>
             <Routes>
               {/* Public Routes */}

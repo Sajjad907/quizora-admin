@@ -11,7 +11,7 @@ const TagInput = ({ tags = [], onChange, placeholder }) => {
     };
     const removeTag = (tag) => onChange(tags.filter(t => t !== tag));
     return (
-        <div className="flex flex-wrap gap-1.5 p-1.5 bg-slate-50/50 rounded-xl border border-slate-200 min-h-[40px] transition-all hover:bg-slate-50 focus-within:bg-white focus-within:ring-2 focus-within:ring-primary/5 focus-within:border-primary/40 shadow-sm">
+        <div className="flex flex-wrap gap-1.5 p-1.5 bg-muted/30 rounded-xl border border-border min-h-[40px] transition-all hover:bg-muted/50 focus-within:bg-card focus-within:ring-2 focus-within:ring-primary/5 focus-within:border-primary/40 shadow-sm">
             {tags.map(t => (
                 <span key={t} className="px-2.5 py-1 bg-primary/5 text-primary text-[10px] font-bold rounded-lg flex items-center gap-1.5 shrink-0 border border-primary/10 group animate-in fade-in zoom-in-95 duration-200">
                     {t}
@@ -23,7 +23,7 @@ const TagInput = ({ tags = [], onChange, placeholder }) => {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } }}
                 placeholder={tags.length === 0 ? placeholder : ""}
-                className="flex-1 bg-transparent border-none outline-none text-[11px] font-medium p-1 min-w-[100px] text-slate-700 placeholder:text-slate-300"
+                className="flex-1 bg-transparent border-none outline-none text-[11px] font-medium p-1 min-w-[100px] text-foreground placeholder:text-muted-foreground/30"
             />
         </div>
     );

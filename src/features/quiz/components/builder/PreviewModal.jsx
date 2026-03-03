@@ -86,7 +86,7 @@ const PreviewModal = ({ isOpen, onClose, questions, outcomes, settings }) => {
     return (
         <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background/90 backdrop-blur-3xl p-4 md:p-10 animate-reveal overflow-hidden">
             <div className="absolute top-8 w-full flex items-center justify-between px-12 z-[110]">
-                <div className="flex bg-white p-1 rounded-2xl border border-slate-200 shadow-xl">
+                <div className="flex bg-card p-1 rounded-2xl border border-border shadow-xl">
                     {['mobile', 'tablet', 'desktop'].map(d => (
                         <button key={d} onClick={() => setDevice(d)} className={`px-4 py-2 rounded-xl flex items-center gap-2 transition-all duration-300 uppercase text-[9px] font-bold tracking-widest ${device === d ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-105' : 'text-slate-400 hover:text-slate-600'}`}>
                             {d === 'mobile' ? <Smartphone size={14} /> : d === 'tablet' ? <Tablet size={14} /> : <Monitor size={14} />}
@@ -95,8 +95,8 @@ const PreviewModal = ({ isOpen, onClose, questions, outcomes, settings }) => {
                     ))}
                 </div>
                 <div className="flex items-center gap-3">
-                    <button onClick={() => { setStep(0); setView('quiz'); setAnswers({}); }} title="Reset Preview" className="w-10 h-10 flex items-center justify-center bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-primary hover:border-primary/40 transition-all shadow-md active:scale-95"><RotateCcw size={18} /></button>
-                    <button onClick={onClose} className="w-10 h-10 flex items-center justify-center bg-white border border-slate-200 hover:bg-rose-50 hover:border-rose-200 hover:text-rose-500 rounded-xl text-slate-400 transition-all shadow-md active:scale-95"><X size={20} /></button>
+                    <button onClick={() => { setStep(0); setView('quiz'); setAnswers({}); }} title="Reset Preview" className="w-10 h-10 flex items-center justify-center bg-card border border-border rounded-xl text-muted-foreground hover:text-primary hover:border-primary/40 transition-all shadow-md active:scale-95"><RotateCcw size={18} /></button>
+                    <button onClick={onClose} className="w-10 h-10 flex items-center justify-center bg-card border border-border hover:bg-rose-50 hover:border-rose-200 hover:text-rose-500 rounded-xl text-muted-foreground transition-all shadow-md active:scale-95"><X size={20} /></button>
                 </div>
             </div>
             <div className="flex-1 flex items-center justify-center w-full mt-12">
