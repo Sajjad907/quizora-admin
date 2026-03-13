@@ -8,15 +8,41 @@ export const AppProvider = ({ children }) => {
   });
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   
-  // Subscription state initialized from URL parameters
+  // Subscription state with persistence
   const [subscription, setSubscription] = useState(() => {
     const params = new URLSearchParams(window.location.search);
+    const shop = params.get("shop");
+    
+    // If shop is in URL, it's a fresh load/sync from Shopify - use URL params
+    if (shop) {
+      const newSub = {
+        plan: params.get("plan") || "Free",
+        status: params.get("status") || "ACTIVE",
+        updatedAt: params.get("updatedAt") || Date.now().toString(),
+        pricingUrl: params.get("pricingUrl") || "#",
+        shop: shop
+      };
+      localStorage.setItem("quizora-subscription", JSON.stringify(newSub));
+      return newSub;
+    }
+
+    // Otherwise, try to load from localStorage
+    const savedSub = localStorage.getItem("quizora-subscription");
+    if (savedSub) {
+      try {
+        return JSON.parse(savedSub);
+      } catch (err) {
+        console.error("Failed to parse saved subscription:", err);
+      }
+    }
+
+    // Final fallback
     return {
-      plan: params.get("plan") || "Free",
-      status: params.get("status") || "ACTIVE",
-      updatedAt: params.get("updatedAt") || Date.now().toString(),
-      pricingUrl: params.get("pricingUrl") || "#",
-      shop: params.get("shop") || ""
+      plan: "Free",
+      status: "ACTIVE",
+      updatedAt: Date.now().toString(),
+      pricingUrl: "#",
+      shop: ""
     };
   });
 
@@ -27,6 +53,13 @@ export const AppProvider = ({ children }) => {
     root.classList.add(theme);
     localStorage.setItem("app-theme", theme);
   }, [theme]);
+
+  // Sync subscription to localStorage if updated programmatically
+  useEffect(() => {
+    if (subscription && subscription.shop) {
+      localStorage.setItem("quizora-subscription", JSON.stringify(subscription));
+    }
+  }, [subscription]);
 
   const toggleTheme = () => {
     setTheme((prev) => (prev === "dark" ? "light" : "dark"));
