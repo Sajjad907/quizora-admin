@@ -16,16 +16,17 @@ import Register from "./features/auth/Register";
 import ForgotPassword from "./features/auth/ForgotPassword";
 import LandingPage from "./features/landing/pages/LandingPage";
 import ProtectedRoute from "./components/ProtectedRoute";
+import LoadingScreen from "./shared/components/ui/LoadingScreen";
 
 const AuthCheck = ({ children }) => {
   const { user, loading } = useAuth();
-  if (loading) return null;
+  if (loading) return <LoadingScreen />;
   return children;
 };
 
 const AuthRedirect = ({ children }) => {
   const { user, loading } = useAuth();
-  if (loading) return null;
+  if (loading) return <LoadingScreen message="Establishing Secure Link..." />;
   if (user) return <Navigate to="/dashboard" replace />;
   return children;
 };
