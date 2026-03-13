@@ -89,6 +89,7 @@ const Dashboard = () => {
     setConfirmModal({ isOpen: true, id, name });
   };
 
+
   const confirmDelete = () => {
     deleteQuiz(confirmModal.id, {
       onSuccess: () => {
@@ -385,8 +386,18 @@ const Dashboard = () => {
                             {quiz.title?.substring(0, 2)?.toUpperCase() || 'QZ'}
                           </div>
                           <div>
-                            <div className="text-sm font-black text-foreground group-hover:text-primary transition-colors tracking-tight mb-0.5">{quiz.title}</div>
-                            <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Production Entity</div>
+                            <div className="text-sm font-black text-foreground group-hover:text-primary transition-colors tracking-tight mb-1">{quiz.title}</div>
+                            <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                                <span className="text-[9px] font-black text-primary/60 uppercase tracking-widest bg-primary/5 px-2 py-0.5 rounded border border-primary/10">Theme Editor ID</span>
+                                <code className="text-[10px] font-bold text-muted-foreground bg-muted/50 px-2 py-0.5 rounded border border-border/50">{quiz._id}</code>
+                                <button
+                                  onClick={(e) => handleCopyId(e, quiz._id)}
+                                  className="p-1 rounded bg-primary/5 text-primary hover:bg-primary hover:text-white transition-all border border-primary/10"
+                                  title="Copy ID for Shopify"
+                                >
+                                  <Copy size={10} />
+                                </button>
+                            </div>
                           </div>
                         </div>
                       </td>

@@ -51,8 +51,7 @@ const QuizList = () => {
       });
    };
 
-   const handleCopyId = (e, id) => {
-      e.stopPropagation();
+   const handleCopyId = (id) => {
       navigator.clipboard.writeText(id);
       toast.success('Quiz ID copied to clipboard!');
    };
@@ -153,18 +152,20 @@ const QuizList = () => {
                                           {quiz.title.substring(0, 2).toUpperCase()}
                                        </div>
                                        <div>
-                                          <div className="flex items-center gap-2">
-                                             <div className="text-base font-black text-foreground group-hover:text-primary transition-colors tracking-tight mb-0.5">{quiz.title}</div>
+                                          <div className="text-base font-black text-foreground group-hover:text-primary transition-colors tracking-tight mb-1">
+                                             {quiz.title}
+                                          </div>
+                                          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                                             <span className="text-[9px] font-black text-primary/60 uppercase tracking-widest bg-primary/5 px-2 py-0.5 rounded border border-primary/10">Theme Editor ID</span>
+                                             <code className="text-[10px] font-bold text-muted-foreground bg-muted/50 px-2 py-0.5 rounded border border-border/50">{quiz._id}</code>
                                              <button
-                                                onClick={(e) => handleCopyId(e, quiz._id)}
-                                                className="opacity-0 group-hover:opacity-40 hover:opacity-100 transition-opacity p-1 rounded-md hover:bg-primary/5 text-muted-foreground hover:text-primary"
-                                                title="Copy ID"
+                                                onClick={() => handleCopyId(quiz._id)}
+                                                className="p-1 rounded bg-primary/5 text-primary hover:bg-primary hover:text-white transition-all border border-primary/10"
+                                                title="Copy ID for Shopify"
                                              >
-                                                <Copy size={12} />
+                                                <Copy size={10} />
                                              </button>
                                           </div>
-
-                                          <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] opacity-60">ID: {quiz._id.substring(0, 8)}...</div>
                                        </div>
                                     </div>
                                  </td>
