@@ -1,9 +1,24 @@
 import Sidebar from "./Sidebar";
 import { useApp } from "../../../context/AppContext";
+import { toast } from "react-hot-toast";
+import { useEffect } from "react";
+import { AlertCircle, ArrowUpCircle } from "lucide-react";
 
 const Layout = ({ children }) => {
   const { isSidebarOpen, subscription } = useApp();
   const isExpired = subscription && subscription.status !== 'ACTIVE' && subscription.plan !== 'Free';
+  useEffect(() => {
+    if (isExpired) {
+      toast.error("Your subscription has expired. Please upgrade to continue.", {
+        id: 'expiry-toast',
+        duration: Infinity,
+        position: 'bottom-center',
+        icon: <AlertCircle className="text-rose-500" />
+      });
+    } else {
+      toast.dismiss('expiry-toast');
+    }
+  }, [isExpired]);
 
   return (
     <div className="min-h-screen bg-background flex overflow-x-hidden selection:bg-primary/10 selection:text-primary">
@@ -13,35 +28,32 @@ const Layout = ({ children }) => {
           ${isSidebarOpen ? "pl-[280px]" : "pl-[100px]"}
         `}
       >
-        <div className={`flex-1 w-full max-w-[1920px] mx-auto p-4 md:p-8 transition-all duration-500 ${isExpired ? 'blur-md pointer-events-none select-none' : ''}`}>
+        {isExpired && (
+          <div className="w-full bg-rose-500/10 border-b border-rose-500/20 px-6 py-3 flex items-center justify-between animate-in slide-in-from-top duration-500 sticky top-0 z-[60] backdrop-blur-md">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-rose-500/20 flex items-center justify-center">
+                <AlertCircle className="w-4 h-4 text-rose-500" />
+              </div>
+              <div>
+                <span className="text-sm font-bold text-foreground">Subscription Expired:</span>
+                <span className="text-sm text-muted-foreground ml-2">Your {subscription.plan} plan is currently inactive.</span>
+              </div>
+            </div>
+            <a 
+              href={subscription.pricingUrl}
+              target="_top"
+              className="flex items-center gap-2 px-4 py-1.5 bg-rose-500 text-white text-xs font-bold rounded-lg hover:bg-rose-600 transition-colors shadow-lg shadow-rose-500/20 uppercase tracking-wider"
+            >
+              <ArrowUpCircle className="w-3.5 h-3.5" />
+              Upgrade Now
+            </a>
+          </div>
+        )}
+        <div className={`flex-1 w-full max-w-[1920px] mx-auto p-4 md:p-8 transition-all duration-500`}>
           <div className="w-full h-full animate-reveal">
             {children}
           </div>
         </div>
-
-        {isExpired && (
-          <div className="absolute inset-0 z-[100] flex items-center justify-center p-6 bg-background/20 backdrop-blur-[2px]">
-            <div className="max-w-md w-full glass-panel p-8 text-center space-y-6 shadow-2xl border-rose-500/20">
-              <div className="w-20 h-20 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto">
-                <span className="text-rose-500 text-3xl">⚠️</span>
-              </div>
-              <div className="space-y-2">
-                <h2 className="text-2xl font-black tracking-tight text-foreground">Subscription Expired</h2>
-                <p className="text-muted-foreground text-sm leading-relaxed">
-                  Your <span className="font-bold text-foreground">{subscription.plan}</span> plan has been suspended. 
-                  Please upgrade or renew your subscription in Shopify to continue using Quizora.
-                </p>
-              </div>
-              <a 
-                href={subscription.pricingUrl}
-                target="_top"
-                className="block w-full py-4 bg-primary text-white font-black rounded-2xl hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-primary/20"
-              >
-                RENEW SUBSCRIPTION
-              </a>
-            </div>
-          </div>
-        )}
       </main>
     </div>
   );
