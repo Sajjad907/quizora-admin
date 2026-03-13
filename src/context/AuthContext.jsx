@@ -11,6 +11,25 @@ export const AuthProvider = ({ children }) => {
     const checkAuth = useCallback(async () => {
         try {
             setLoading(true);
+
+            // 0. Check for Auto-Login (Shopify Redirect)
+            const params = new URLSearchParams(window.location.search);
+            const autoLogin = params.get("autoLogin") === "true";
+            const shop = params.get("shop");
+
+            if (autoLogin && shop) {
+                try {
+                    const response = await apiClient.post("/auth/shopify-login", { shop });
+                    if (response.status === "success") {
+                        setUser(response.user);
+                        setLoading(false);
+                        return; // Successfully auto-logged in
+                    }
+                } catch (err) {
+                    console.error("Auto-login failed:", err);
+                }
+            }
+
             // 1. Initial silent check
             const response = await apiClient.get("/auth/status");
             if (response.authenticated) {
