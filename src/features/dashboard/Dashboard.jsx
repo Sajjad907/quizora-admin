@@ -27,13 +27,15 @@ const StatsCard = ({ title, value, icon: Icon, trend, isPositive, color, bg }) =
       </div>
     </div>
 
-    <div className="relative z-10 mt-5 flex items-center text-xs font-semibold">
-      <span className={`${isPositive ? 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20' : 'text-rose-500 bg-rose-500/10 border-rose-500/20'} px-2 py-1 rounded-lg border flex items-center mr-2 transition-colors`}>
-        <TrendingUp size={12} className={`mr-1 ${!isPositive && 'rotate-180'}`} />
-        {trend}
-      </span>
-      <span className="text-muted-foreground">vs last month</span>
-    </div>
+    {trend && (
+      <div className="relative z-10 mt-5 flex items-center text-xs font-semibold">
+        <span className={`${isPositive ? 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20' : 'text-rose-500 bg-rose-500/10 border-rose-500/20'} px-2 py-1 rounded-lg border flex items-center mr-2 transition-colors`}>
+          <TrendingUp size={12} className={`mr-1 ${!isPositive && 'rotate-180'}`} />
+          {trend}
+        </span>
+        <span className="text-muted-foreground">vs last month</span>
+      </div>
+    )}
   </div>
 );
 
@@ -143,7 +145,7 @@ const Dashboard = () => {
             title="Total Quizzes"
             value={stats?.totalQuizzes || 0}
             icon={FileText}
-            trend={stats?.trends?.quizzes || "+0 this week"}
+            trend={stats?.trends?.quizzes}
             isPositive={true}
             color="text-primary"
             bg="bg-primary/5"
@@ -152,7 +154,7 @@ const Dashboard = () => {
             title="Total Leads"
             value={stats?.totalLeads || 0}
             icon={Users}
-            trend={stats?.trends?.leads || "+0 today"}
+            trend={stats?.trends?.leads}
             isPositive={true}
             color="text-indigo-500"
             bg="bg-indigo-500/5"
@@ -161,7 +163,7 @@ const Dashboard = () => {
             title="Total Sessions"
             value={stats?.totalSessions || 0}
             icon={CheckCircle}
-            trend={stats?.trends?.sessions || "+0 organic"}
+            trend={stats?.trends?.sessions}
             isPositive={true}
             color="text-emerald-500"
             bg="bg-emerald-500/5"
@@ -170,7 +172,7 @@ const Dashboard = () => {
             title="Conversion"
             value={stats?.conversionRate || "0%"}
             icon={TrendingUp}
-            trend={stats?.trends?.conversion || "0% growth"}
+            trend={stats?.trends?.conversion}
             isPositive={true}
             color="text-rose-500"
             bg="bg-rose-500/5"
