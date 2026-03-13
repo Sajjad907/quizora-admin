@@ -382,7 +382,7 @@ const Dashboard = () => {
                               i % 3 === 1 ? 'bg-gradient-to-br from-rose-500 to-pink-600 shadow-rose-500/10' :
                                 'bg-gradient-to-br from-cyan-500 to-blue-600 shadow-cyan-500/10'}`
                           }>
-                            {quiz.title.substring(0, 2).toUpperCase()}
+                            {quiz.title?.substring(0, 2)?.toUpperCase() || 'QZ'}
                           </div>
                           <div>
                             <div className="text-sm font-black text-foreground group-hover:text-primary transition-colors tracking-tight mb-0.5">{quiz.title}</div>

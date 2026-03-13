@@ -92,7 +92,9 @@ const Sidebar = () => {
 
         <div className={`flex items-center gap-4 p-2 rounded-2xl transition-all cursor-pointer group hover:bg-muted/50 ${!isSidebarOpen && "justify-center"}`}>
           <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-primary to-indigo-600 flex items-center justify-center overflow-hidden shadow-sm group-hover:scale-110 transition-transform">
-            <span className="text-white font-black text-xs">{subscription?.shop?.[0].toUpperCase() || user?.email?.[0].toUpperCase() || 'A'}</span>
+            <span className="text-white font-black text-xs">
+              {subscription?.shop?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'Q'}
+            </span>
           </div>
           {isSidebarOpen && (
             <div className="flex-1 overflow-hidden animate-reveal">

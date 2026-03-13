@@ -80,7 +80,7 @@ const Profile = () => {
                         <div className="premium-glass p-8 rounded-[32px] text-center border-primary/20 bg-primary/5 relative overflow-hidden group">
                             <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent pointer-events-none"></div>
                             <div className="w-24 h-24 rounded-3xl bg-primary flex items-center justify-center text-white mx-auto shadow-2xl shadow-primary/30 mb-6 group-hover:rotate-3 transition-transform">
-                                <span className="text-4xl font-black">{user?.email?.[0].toUpperCase()}</span>
+                                <span className="text-4xl font-black">{user?.email?.[0]?.toUpperCase() || 'Q'}</span>
                             </div>
                             <h2 className="text-xl font-black text-foreground">{user?.email?.split('@')[0]}</h2>
                             <p className="text-[10px] font-black tracking-[0.2em] text-primary uppercase mt-1">Enterprise Admin</p>
