@@ -7,7 +7,7 @@ import { MENU_ITEMS } from "../../../constants";
 import { useAuth } from "../../../context/AuthContext";
 
 const Sidebar = () => {
-  const { isSidebarOpen, toggleSidebar, theme, toggleTheme } = useApp();
+  const { isSidebarOpen, toggleSidebar, theme, toggleTheme, subscription } = useApp();
   const { user, logout } = useAuth();
   const location = useLocation();
 
@@ -92,12 +92,25 @@ const Sidebar = () => {
 
         <div className={`flex items-center gap-4 p-2 rounded-2xl transition-all cursor-pointer group hover:bg-muted/50 ${!isSidebarOpen && "justify-center"}`}>
           <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-primary to-indigo-600 flex items-center justify-center overflow-hidden shadow-sm group-hover:scale-110 transition-transform">
-            <span className="text-white font-black text-xs">{user?.email?.[0].toUpperCase() || 'A'}</span>
+            <span className="text-white font-black text-xs">{subscription?.shop?.[0].toUpperCase() || user?.email?.[0].toUpperCase() || 'A'}</span>
           </div>
           {isSidebarOpen && (
             <div className="flex-1 overflow-hidden animate-reveal">
-              <p className="text-[13px] font-black truncate leading-tight text-foreground">{user?.email?.split('@')[0] || 'Admin'}</p>
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none mt-1">PRO ACCOUNT</p>
+              <p className="text-[13px] font-black truncate leading-tight text-foreground">{subscription?.plan} PLAN</p>
+              <div className="flex items-center gap-2 mt-1">
+                <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest leading-none outline outline-1 outline-emerald-500/30 px-1.5 py-0.5 rounded-sm bg-emerald-500/10">
+                  {subscription?.status}
+                </p>
+                {(subscription?.plan === 'Free' || subscription?.plan === 'Starter Plan') && (
+                  <a 
+                    href={subscription?.pricingUrl} 
+                    target="_top"
+                    className="text-[10px] font-bold text-primary uppercase tracking-widest leading-none bg-primary/10 px-1.5 py-0.5 rounded-sm hover:bg-primary hover:text-white transition-colors"
+                  >
+                    UPGRADE
+                  </a>
+                )}
+              </div>
             </div>
           )}
         </div>

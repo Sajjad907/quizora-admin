@@ -7,6 +7,18 @@ export const AppProvider = ({ children }) => {
     return localStorage.getItem("app-theme") || "dark";
   });
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  
+  // Subscription state initialized from URL parameters
+  const [subscription, setSubscription] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return {
+      plan: params.get("plan") || "Free",
+      status: params.get("status") || "ACTIVE",
+      updatedAt: params.get("updatedAt") || Date.now().toString(),
+      pricingUrl: params.get("pricingUrl") || "#",
+      shop: params.get("shop") || ""
+    };
+  });
 
   // Apply theme class to html element whenever theme state changes
   useEffect(() => {
@@ -29,6 +41,8 @@ export const AppProvider = ({ children }) => {
     toggleTheme,
     isSidebarOpen,
     toggleSidebar,
+    subscription,
+    setSubscription
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
