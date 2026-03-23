@@ -40,7 +40,7 @@ const Layout = ({ children }) => {
               </div>
             </div>
             <a 
-              href={subscription.pricingUrl}
+              href={subscription.pricingUrl !== '#' ? subscription.pricingUrl : `https://admin.shopify.com/store/${subscription?.shop?.split('.')[0]}/apps/fbc9373c64a40b88fc9ea9dc74391e28/app/pricing`}
               target="_top"
               className="flex items-center gap-2 px-4 py-1.5 bg-rose-500 text-white text-xs font-bold rounded-lg hover:bg-rose-600 transition-colors shadow-lg shadow-rose-500/20 uppercase tracking-wider"
             >
