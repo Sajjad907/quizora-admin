@@ -114,7 +114,7 @@ const Sidebar = () => {
                         });
                         return;
                       }
-                      window.open(subscription?.pricingUrl !== '#' ? subscription.pricingUrl : `https://admin.shopify.com/store/${subscription?.shop?.split('.')[0]}/apps/quizora-quiz-app-1/app/pricing`, "_top");
+                      window.open(`https://admin.shopify.com/store/${subscription?.shop?.split('.')[0]}/apps/quizora-quiz-app-1/app/pricing`, "_top");
                     }}
                     className="text-[10px] font-bold text-primary uppercase tracking-widest leading-none bg-primary/10 px-1.5 py-0.5 rounded-sm hover:bg-primary hover:text-white transition-colors cursor-pointer"
                   >
